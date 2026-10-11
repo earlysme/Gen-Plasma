@@ -12,7 +12,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'name',
@@ -81,6 +81,11 @@ class User extends Authenticatable
     public function studentSubjects()
     {
         return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')->withTimestamps();
+    }
+
+    public function enrolledSubjects()
+    {
+        return $this->studentSubjects();
     }
 
     // Schedules opened by tutor

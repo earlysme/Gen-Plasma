@@ -30,6 +30,12 @@
         <form class="login-card" action="{{ route('login.post') }}" method="POST">
             @csrf
             <div><h2>Masuk ke akun</h2><p class="panel-subtitle">Masukkan email dan kata sandi Anda.</p></div>
+
+            @if($errors->any())
+                <div style="background:var(--pink-soft);color:var(--pink-text);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;">
+                    {{ $errors->first() }}
+                </div>
+            @endif
             <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" value="{{ old('email') }}" autocomplete="username" required autofocus placeholder="nama@email.com"></div>
             <div class="field"><label for="password">Kata sandi</label><div class="pass"><input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan kata sandi"><button type="button" id="passToggle">Lihat</button></div></div>
             <button class="btn btn-primary" type="submit" style="padding:13px">Masuk</button>

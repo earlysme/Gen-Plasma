@@ -4,7 +4,12 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Program;
+use App\Models\Room;
 use App\Models\Schedule;
+use App\Models\Subject;
+use App\Models\TimeSlot;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +23,7 @@ class BookingController extends Controller
      */
     public function index()
     {
-        /** @var \App\Models\User $student */
+        /** @var User $student */
         $student = Auth::user();
 
         // Ambil jadwal aktif mulai hari ini yang belum penuh
@@ -38,7 +43,7 @@ class BookingController extends Controller
             ->where('status', 'confirmed')
             ->whereHas('schedule', function ($q) use ($startOfWeek, $endOfWeek) {
                 $q->whereBetween('date', [$startOfWeek, $endOfWeek])
-                  ->where('status', '!=', 'cancelled');
+                    ->where('status', '!=', 'cancelled');
             })
             ->count();
 
@@ -53,7 +58,19 @@ class BookingController extends Controller
 
         $maxWeekly = $student->weekly_frequency ?? 2;
 
-        return view('student.bookings.index', compact('schedules', 'regularSchedules', 'specialSchedules', 'weeklyBookingCount', 'maxWeekly'));
+        // Data pendukung untuk Siswa membuat jadwal Konsultasi mandiri
+        $subjects = Subject::with('tutors')->orderBy('name')->get();
+        $timeSlots = TimeSlot::where('is_active', true)->orderBy('session_number')->get();
+
+        return view('student.bookings.index', compact(
+            'schedules',
+            'regularSchedules',
+            'specialSchedules',
+            'weeklyBookingCount',
+            'maxWeekly',
+            'subjects',
+            'timeSlots'
+        ));
     }
 
     /**
@@ -65,7 +82,7 @@ class BookingController extends Controller
             'schedule_id' => ['required', 'exists:schedules,id'],
         ]);
 
-        /** @var \App\Models\User $student */
+        /** @var User $student */
         $student = Auth::user();
         $schedule = Schedule::findOrFail($request->schedule_id);
 
@@ -97,7 +114,7 @@ class BookingController extends Controller
             ->where('status', 'confirmed')
             ->whereHas('schedule', function ($q) use ($startOfWeek, $endOfWeek) {
                 $q->whereBetween('date', [$startOfWeek, $endOfWeek])
-                  ->where('status', '!=', 'cancelled');
+                    ->where('status', '!=', 'cancelled');
             })
             ->count();
 
@@ -114,12 +131,12 @@ class BookingController extends Controller
                 abort(409, 'Kuota kursi pada slot jadwal ini sudah penuh.');
             }
             Booking::create([
-            'booking_code' => 'BKG-' . strtoupper(Str::random(6)),
-            'schedule_id' => $schedule->id,
-            'student_id' => $student->id,
-            'booked_by_user_id' => $student->id,
-            'booking_type' => 'self_service',
-            'status' => 'confirmed',
+                'booking_code' => 'BKG-'.strtoupper(Str::random(6)),
+                'schedule_id' => $schedule->id,
+                'student_id' => $student->id,
+                'booked_by_user_id' => $student->id,
+                'booking_type' => 'self_service',
+                'status' => 'confirmed',
             ]);
             $lockedSchedule->increment('booked_count');
         });
@@ -128,11 +145,120 @@ class BookingController extends Controller
     }
 
     /**
+     * Siswa membuat jadwal konsultasi mandiri dengan alokasi ruangan otomatis & validasi anti-bentrok.
+     */
+    public function storeConsultation(Request $request)
+    {
+        $request->validate([
+            'date' => ['required', 'date', 'after:today'],
+            'time_slot_id' => ['required', 'exists:time_slots,id'],
+            'subject_id' => ['required', 'exists:subjects,id'],
+            'tutor_id' => ['required', 'exists:users,id'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        /** @var User $student */
+        $student = Auth::user();
+        $scheduleDate = Carbon::parse($request->date);
+
+        // 1. Cek Kuota Mingguan Siswa
+        $startOfWeek = $scheduleDate->copy()->startOfWeek();
+        $endOfWeek = $scheduleDate->copy()->endOfWeek();
+
+        $weeklyBookingCount = Booking::where('student_id', $student->id)
+            ->where('status', 'confirmed')
+            ->whereHas('schedule', function ($q) use ($startOfWeek, $endOfWeek) {
+                $q->whereBetween('date', [$startOfWeek, $endOfWeek])
+                    ->where('status', '!=', 'cancelled');
+            })
+            ->count();
+
+        $maxWeekly = $student->weekly_frequency ?? 2;
+        if ($weeklyBookingCount >= $maxWeekly) {
+            return back()->with('error', "Batas kuota tercapai! Anda sudah mengambil {$weeklyBookingCount} dari batas maksimal {$maxWeekly} jadwal pada minggu tersebut.");
+        }
+
+        // 2. Cek apakah tutor mengajar mapel ini
+        $tutor = User::role('tutor')->findOrFail($request->tutor_id);
+        $teachesSubject = $tutor->taughtSubjects()->where('subjects.id', $request->subject_id)->exists();
+        if (! $teachesSubject) {
+            return back()->with('error', "Pengajar {$tutor->name} tidak mengampu mata pelajaran yang dipilih.");
+        }
+
+        // 3. Validasi Anti-Bentrok Jadwal Tutor
+        $tutorCollision = Schedule::where('tutor_id', $tutor->id)
+            ->where('date', $request->date)
+            ->where('time_slot_id', $request->time_slot_id)
+            ->where('status', '!=', 'cancelled')
+            ->exists();
+
+        if ($tutorCollision) {
+            return back()->with('error', "Bentrok! Pengajar {$tutor->name} sudah memiliki jadwal lain pada sesi dan tanggal tersebut. Silakan pilih sesi atau hari lain.");
+        }
+
+        // 4. Alokasi Ruangan Fisik yang Masih Tersedia (Prioritas kapasitas kecil: R6, R1, R2, dll)
+        $busyRoomIds = Schedule::where('date', $request->date)
+            ->where('time_slot_id', $request->time_slot_id)
+            ->where('status', '!=', 'cancelled')
+            ->pluck('room_id')
+            ->toArray();
+
+        $availableRoom = Room::where('is_physical', true)
+            ->where('is_active', true)
+            ->whereNotIn('id', $busyRoomIds)
+            ->orderBy('capacity', 'asc')
+            ->first();
+
+        if (! $availableRoom) {
+            return back()->with('error', 'Semua ruangan bimbingan penuh pada tanggal dan sesi waktu tersebut. Silakan pilih sesi atau hari lain.');
+        }
+
+        // 5. Ambil Program Konsultasi
+        $program = Program::where('code', 'consult')->first();
+        if (! $program) {
+            $program = Program::firstOrCreate(
+                ['code' => 'consult'],
+                ['name' => 'Konsultasi', 'is_private' => false, 'requires_room' => true]
+            );
+        }
+
+        // 6. Buat Jadwal & Booking Konsultasi dalam Transaksi Database
+        DB::transaction(function () use ($student, $tutor, $request, $availableRoom, $program) {
+            $schedule = Schedule::create([
+                'tutor_id' => $tutor->id,
+                'subject_id' => $request->subject_id,
+                'education_level_id' => $student->education_level_id ?? 2,
+                'program_id' => $program->id,
+                'room_id' => $availableRoom->id,
+                'time_slot_id' => $request->time_slot_id,
+                'date' => $request->date,
+                'quota_max' => 1,
+                'booked_count' => 1,
+                'status' => 'scheduled',
+                'notes' => $request->notes ?? 'Jadwal Konsultasi (Dibuat Mandiri oleh Siswa)',
+            ]);
+
+            Booking::create([
+                'booking_code' => 'KNS-'.strtoupper(Str::random(6)),
+                'schedule_id' => $schedule->id,
+                'student_id' => $student->id,
+                'booked_by_user_id' => $student->id,
+                'booking_type' => 'self_service',
+                'status' => 'confirmed',
+                'booked_at' => now(),
+            ]);
+        });
+
+        return redirect()->route('student.bookings.my')
+            ->with('success', "Jadwal konsultasi berhasil dibuat! Ruangan {$availableRoom->name} bersama {$tutor->name} telah dipesan.");
+    }
+
+    /**
      * Halaman Jadwal Saya: Menampilkan riwayat dan tiket booking siswa.
      */
     public function myBookings()
     {
-        /** @var \App\Models\User $student */
+        /** @var User $student */
         $student = Auth::user();
 
         $bookings = Booking::with(['schedule.subject', 'schedule.room', 'schedule.timeSlot', 'schedule.tutor', 'schedule.program'])
@@ -156,13 +282,13 @@ class BookingController extends Controller
             return back()->with('error', 'Jadwal ini sudah dibatalkan sebelumnya.');
         }
 
-        // VALIDASI H-1: Selisih tanggal jadwal dengan hari ini wajib >= 1 hari (bukan di hari H)
-        $sessionStartsAt = Carbon::parse($booking->schedule->date.' '.$booking->schedule->timeSlot->start_time);
+        // VALIDASI H-1: Selisih waktu mulai sesi dengan sekarang wajib >= 24 jam (minimal H-1)
+        $sessionStartsAt = Carbon::parse($booking->schedule->date->format('Y-m-d').' '.$booking->schedule->timeSlot->start_time);
         if (Carbon::now()->diffInHours($sessionStartsAt, false) < 24) {
-            return back()->with('error', 'Pembatalan gagal! Pembatalan jadwal hanya dapat dilakukan maksimal H-1 (24 jam sebelum tanggal sesi dimulai).');
+            return back()->with('error', 'Pembatalan gagal! Pembatalan jadwal hanya dapat dilakukan maksimal H-1 (minimal 24 jam sebelum tanggal sesi dimulai).');
         }
 
-        // Update status pembatalan
+        // Update status pembatalan booking
         $booking->update([
             'status' => 'cancelled',
             'cancelled_at' => Carbon::now(),
@@ -172,6 +298,11 @@ class BookingController extends Controller
         // Kembalikan kuota kursi slot
         if ($booking->schedule->booked_count > 0) {
             $booking->schedule->decrement('booked_count');
+        }
+
+        // Jika ini sesi konsultasi yang dibuat mandiri oleh siswa, otomatis batalkan juga slot jadwalnya agar ruangan dan tutor kembali terbuka
+        if ($booking->schedule->program && $booking->schedule->program->code === 'consult') {
+            $booking->schedule->update(['status' => 'cancelled']);
         }
 
         return back()->with('success', 'Jadwal berhasil dibatalkan. Kuota mingguan Anda telah dikembalikan!');
