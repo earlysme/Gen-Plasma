@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['admin', 'tutor', 'student'])->default('student')->index();
+            $table->string('phone', 20)->nullable();
+            $table->text('address')->nullable();
+            $table->string('school_origin', 100)->nullable();
+            $table->string('grade_class', 50)->nullable();
+            $table->unsignedBigInteger('education_level_id')->nullable()->index();
+            $table->unsignedBigInteger('program_id')->nullable()->index();
+            $table->unsignedTinyInteger('weekly_frequency')->default(2);
+            $table->json('preferred_days')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
