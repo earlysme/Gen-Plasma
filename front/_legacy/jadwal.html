@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="theme-color" content="#6D3BE0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Jadwal belajar — Gen Plasma</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/navbar.css">
+</head>
+<body data-slug="jadwal">
+  <div class="app-shell">
+    <!-- navbar.html dimuat di sini oleh assets/js/core.js -->
+    <div id="navbar"></div>
+
+    <main class="main-area">
+      <div class="page-wrap">
+        <section class="welcome-row">
+          <div><h1 id="pageTitle"></h1></div>
+          <button class="button button-primary" id="primaryAction" style="display:none"></button>
+        </section>
+        <section id="pageContent" aria-live="polite"></section>
+      </div>
+    </main>
+  </div>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/core.js" defer></script>
+  <script src="assets/js/pages/jadwal.js" defer></script>
+</body>
+</html>

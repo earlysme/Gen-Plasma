@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="theme-color" content="#6558e8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dashboard Admin — Gen Plasma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f4fb;
+      --surface: #ffffff;
+      --surface-2: #eeeaf7;
+      --text: #1e1b4b;
+      --muted: #5b5780;
+      --line: #e2ddf1;
+      --primary: #6558e8;
+      --primary-dark: #5043d0;
+      --primary-soft: #eeebff;
+      --mint: #dcf8ee;
+      --mint-text: #178568;
+      --peach: #fff0df;
+      --peach-text: #b76b20;
+      --blue-soft: #e4f3ff;
+      --blue-text: #2775ad;
+      --pink-soft: #fde3f0;
+      --pink-text: #b3226b;
+      --shadow: 0 4px 20px rgba(30, 27, 75, 0.05);
+      --radius: 16px;
+    }
+    html[data-theme="dark"] {
+      --bg: #14112f;
+      --surface: #1e1b4b;
+      --surface-2: #2a2660;
+      --text: #eeebff;
+      --muted: #a9a5d0;
+      --line: #332f6b;
+      --primary: #9389ff;
+      --primary-dark: #766cf0;
+      --primary-soft: #2e2866;
+      --mint: #203e3a;
+      --mint-text: #7ce0bf;
+      --peach: #45352b;
+      --peach-text: #ffc68b;
+      --blue-soft: #233b50;
+      --blue-text: #8ecfff;
+      --pink-soft: #462c3b;
+      --pink-text: #ff8cc4;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "DM Sans", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-x: clip;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+
+    /* LAYOUT & NAVBAR (FIXED) */
+    .app-shell { min-height: 100vh; }
+    .sidebar {
+      width: 248px;
+      position: fixed;
+      inset: 0 auto 0 0;
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px 16px;
+      z-index: 30;
+      transition: transform 0.25s ease;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px 24px;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font: 800 18px "Plus Jakarta Sans";
+    }
+    .brand strong {
+      font: 800 17px "Plus Jakarta Sans";
+      letter-spacing: -0.5px;
+      display: block;
+    }
+    .brand small {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .nav-label {
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      font-weight: 700;
+      padding: 14px 12px 6px;
+      text-transform: uppercase;
+    }
+    .main-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 13px;
+      transition: 0.15s;
+    }
+    .nav-item:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+    .nav-item.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .nav-icon { width: 18px; text-align: center; font-size: 16px; }
+    .sidebar-bottom {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .profile-mini {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .profile-meta strong {
+      font-size: 13px;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-meta span {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+    }
+
+    /* TOPBAR FIXED */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 248px;
+      right: 0;
+      height: 74px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 20;
+    }
+    .mobile-menu {
+      display: none;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface-2);
+      place-items: center;
+      font-size: 18px;
+      color: var(--text);
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .breadcrumb strong { color: var(--text); font-weight: 700; }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      position: relative;
+      transition: 0.15s;
+    }
+    .icon-btn:hover { background: var(--surface-2); }
+    .btn-logout {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.15s;
+    }
+    .btn-logout:hover {
+      background: var(--pink-soft);
+      color: var(--pink-text);
+      border-color: var(--pink-soft);
+    }
+
+    /* MAIN CONTENT */
+    .main-area {
+      margin-left: 248px;
+      padding-top: 74px;
+      min-height: 100vh;
+    }
+    .page-wrap {
+      max-width: 1400px;
+      margin: auto;
+      padding: 28px 32px 40px;
+    }
+    .welcome-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .welcome-row h1 {
+      font: 800 clamp(22px, 2.2vw, 28px) "Plus Jakarta Sans";
+      letter-spacing: -0.8px;
+    }
+    .welcome-row p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .btn-primary {
+      border: 0;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 11px;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(101, 88, 232, 0.2);
+      transition: 0.15s;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    /* STATS GRID */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+    .stat-icon.purple { background: var(--primary-soft); color: var(--primary); }
+    .stat-icon.mint { background: var(--mint); color: var(--mint-text); }
+    .stat-icon.peach { background: var(--peach); color: var(--peach-text); }
+    .stat-icon.blue { background: var(--blue-soft); color: var(--blue-text); }
+    .stat-val { font: 800 24px "Plus Jakarta Sans"; margin: 12px 0 2px; }
+    .stat-label { font-size: 13px; color: var(--muted); }
+
+    /* DASHBOARD CONTENT */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 20px;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .panel-title { font: 800 16px "Plus Jakarta Sans"; }
+    .panel-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .schedule-list, .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px;
+      border-radius: 12px;
+      background: var(--surface-2);
+    }
+    .date-chip {
+      width: 48px;
+      height: 50px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .date-chip strong { font: 800 16px "Plus Jakarta Sans"; }
+    .date-chip span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .schedule-info { flex: 1; min-width: 0; }
+    .schedule-info strong { font-size: 13px; display: block; }
+    .schedule-info span { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; }
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .status-active { background: var(--mint); color: var(--mint-text); }
+    .status-pending { background: var(--peach); color: var(--peach-text); }
+
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .activity-item:last-child { border-bottom: 0; padding-bottom: 0; }
+    .activity-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .activity-text strong { font-size: 13px; display: block; }
+    .activity-text span { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; }
+
+    .banner {
+      background: linear-gradient(120deg, #5043d0, #6558e8);
+      color: #fff;
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .banner h2 { font: 800 18px "Plus Jakarta Sans"; margin-bottom: 4px; }
+    .banner p { font-size: 13px; color: #e5e1ff; }
+    .banner .btn-banner {
+      background: #fff;
+      color: var(--primary);
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    /* TOAST & MODAL */
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: var(--text);
+      color: var(--surface);
+      padding: 12px 18px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: 0.2s;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .scrim { display: none; }
+
+    @media (max-width: 1080px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 850px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .scrim.open {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 25;
+      }
+      .topbar { left: 0; padding: 0 16px; }
+      .mobile-menu { display: grid; }
+      .main-area { margin-left: 0; }
+      .page-wrap { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="index.html">
+        <div class="brand-mark">GP</div>
+        <div>
+          <strong>Gen Plasma</strong>
+          <small>Admin Panel</small>
+        </div>
+      </a>
+
+      <nav class="main-nav">
+        <div class="nav-label">Menu Utama</div>
+        <a class="nav-item active" href="index.html"><span class="nav-icon">⌂</span> Dashboard</a>
+
+        <div class="nav-label">Manajemen Bimbel</div>
+        <a class="nav-item" href="../program/index.html"><span class="nav-icon">▦</span> Kelola Program</a>
+        <a class="nav-item" href="../jadwal/index.html"><span class="nav-icon">▥</span> Kelola Jadwal</a>
+        <a class="nav-item" href="../ruangan/index.html"><span class="nav-icon">▣</span> Kelola Ruangan</a>
+        <a class="nav-item" href="../durasi/index.html"><span class="nav-icon">◷</span> Durasi & Sesi</a>
+        <a class="nav-item" href="../jenjang/index.html"><span class="nav-icon">⌑</span> Kelola Jenjang</a>
+
+        <div class="nav-label">Pengguna & Sistem</div>
+        <a class="nav-item" href="../akun/index.html"><span class="nav-icon">♙</span> Kelola Pengajar & Akun</a>
+        <a class="nav-item" href="../backup/index.html"><span class="nav-icon">▨</span> Backup & Restore</a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="profile-mini">
+          <div class="avatar">EA</div>
+          <div class="profile-meta">
+            <strong>Early Akbar</strong>
+            <span>Administrator</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="scrim" id="scrim"></div>
+
+    <!-- TOPBAR FIXED -->
+    <header class="topbar">
+      <button class="mobile-menu" id="menuToggle" aria-label="Buka navigasi">☰</button>
+      <div class="breadcrumb">
+        <span>Gen Plasma</span>
+        <span>/</span>
+        <span>Admin</span>
+        <span>/</span>
+        <strong>Dashboard</strong>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="themeToggle" title="Ganti Mode">☾</button>
+        <button class="icon-btn" id="notifBtn" title="Notifikasi">♧</button>
+        <a class="btn-logout" href="../../index.html" title="Keluar">⏻ <span>Keluar</span></a>
+      </div>
+    </header>
+
+    <!-- MAIN AREA -->
+    <main class="main-area">
+      <div class="page-wrap">
+        <section class="welcome-row">
+          <div>
+            <h1>Dashboard Ringkasan</h1>
+            <p>Pantau kegiatan pembelajaran, status kelas, dan operasional bimbingan belajar.</p>
+          </div>
+          <a class="btn-primary" href="../jadwal/index.html"><span>＋</span> Tambah Jadwal</a>
+        </section>
+
+        <!-- BANNER INFO -->
+        <div class="banner">
+          <div>
+            <h2>Ada 3 Agenda Penting Hari Ini</h2>
+            <p>1 akun tutor baru menunggu verifikasi, 2 sesi bimbingan belajar sedang berjalan di Virtual Room.</p>
+          </div>
+          <a class="btn-banner" href="../akun/index.html">Tinjau Akun →</a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon purple">♙</div>
+            </div>
+            <div class="stat-val">1.296</div>
+            <div class="stat-label">Total Siswa Aktif</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon mint">◎</div>
+            </div>
+            <div class="stat-val">48</div>
+            <div class="stat-label">Tutor / Pengajar</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon peach">▦</div>
+            </div>
+            <div class="stat-val">36</div>
+            <div class="stat-label">Program Kelas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon blue">◷</div>
+            </div>
+            <div class="stat-val">124</div>
+            <div class="stat-label">Sesi Bulan Ini</div>
+          </div>
+        </div>
+
+        <!-- DUA KOLOM -->
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Jadwal Sesi Terdekat</h2>
+                <p class="panel-subtitle">Sesi yang sedang dan segera berlangsung</p>
+              </div>
+              <a href="../jadwal/index.html" style="color:var(--primary);font-weight:700;font-size:13px">Semua Jadwal →</a>
+            </div>
+            <div class="schedule-list">
+              <div class="schedule-item">
+                <div class="date-chip"><strong>10</strong><span>OKT</span></div>
+                <div class="schedule-info">
+                  <strong>Matematika — Persamaan Linear</strong>
+                  <span>08.00 – 09.00 · Pengajar: Nadia Putri (Virtual Room 01)</span>
+                </div>
+                <span class="status-badge status-active">Berlangsung</span>
+              </div>
+              <div class="schedule-item">
+                <div class="date-chip"><strong>10</strong><span>OKT</span></div>
+                <div class="schedule-info">
+                  <strong>English Conversation Club</strong>
+                  <span>10.00 – 11.00 · Pengajar: Kevin Wijaya (Ruang Belajar 2)</span>
+                </div>
+                <span class="status-badge status-pending">Akan datang</span>
+              </div>
+              <div class="schedule-item">
+                <div class="date-chip"><strong>11</strong><span>OKT</span></div>
+                <div class="schedule-info">
+                  <strong>Sains — Eksplorasi Tata Surya</strong>
+                  <span>13.00 – 14.30 · Pengajar: Dina Maharani (Virtual Room 03)</span>
+                </div>
+                <span class="status-badge status-pending">Akan datang</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Aktivitas Terkini</h2>
+                <p class="panel-subtitle">Pembaruan sistem & komunitas</p>
+              </div>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot">👤</div>
+                <div class="activity-text">
+                  <strong>Pendaftaran Tutor Baru</strong>
+                  <span>Dina Maharani mendaftar sebagai pengajar Sains.</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot">📅</div>
+                <div class="activity-text">
+                  <strong>Jadwal Ditambahkan</strong>
+                  <span>Kelas Persiapan UTBK ditambahkan untuk 12 Okt.</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot">🛠</div>
+                <div class="activity-text">
+                  <strong>Pemeliharaan Ruangan</strong>
+                  <span>Ruang Diskusi A sedang dalam pemeliharaan berkala.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Tema gelap / terang
+    const themeBtn = document.getElementById('themeToggle');
+    let currentTheme = localStorage.getItem('gp_theme') || 'light';
+    function setTheme(t) {
+      currentTheme = t;
+      document.documentElement.dataset.theme = t;
+      localStorage.setItem('gp_theme', t);
+      themeBtn.textContent = t === 'light' ? '☾' : '☀';
+    }
+    setTheme(currentTheme);
+    themeBtn.addEventListener('click', () => setTheme(currentTheme === 'light' ? 'dark' : 'light'));
+
+    // Mobile sidebar drawer
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const scrim = document.getElementById('scrim');
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      scrim.classList.toggle('open');
+    });
+    scrim.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      scrim.classList.remove('open');
+    });
+
+    // Toast notifikasi
+    const toast = document.getElementById('toast');
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+    document.getElementById('notifBtn').addEventListener('click', () => {
+      showToast('Belum ada notifikasi baru untuk Admin.');
+    });
+  </script>
+</body>
+</html>

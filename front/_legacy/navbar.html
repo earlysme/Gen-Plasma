@@ -1,0 +1,18 @@
+<!-- Navbar bersama: dimuat via fetch oleh core.js. Menu diisi otomatis sesuai role. -->
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="dashboard.html" aria-label="Gen Plasma"><span class="logo" role="img" aria-label="Gen Plasma"></span></a>
+  <nav class="main-nav" id="mainNav" aria-label="Navigasi utama"></nav>
+  <div class="sidebar-bottom">
+    <div class="profile-mini"><div class="avatar avatar-purple" id="sidebarAvatar"></div><div class="profile-meta"><strong id="sidebarName"></strong><span id="sidebarRole"></span></div><button class="icon-button" data-action="profile" aria-label="Profil">···</button></div>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<header class="topbar">
+  <button class="icon-button mobile-menu" id="menuToggle" aria-label="Menu">☰</button>
+  <div class="breadcrumb"><strong id="breadcrumbCurrent"></strong></div>
+  <div class="top-actions">
+    <button class="icon-button theme-toggle" id="themeToggle" aria-label="Ganti tema">☾</button>
+    <button class="button button-outline logout-btn" data-action="logout" aria-label="Keluar"><span>⏻</span><span class="lbl">Keluar</span></button>
+  </div>
+</header>
