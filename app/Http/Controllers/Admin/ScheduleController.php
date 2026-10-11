@@ -19,15 +19,21 @@ use Illuminate\Support\Str;
 class ScheduleController extends Controller
 {
     /**
-     * Tampilkan seluruh jadwal operasional dengan opsi filter.
+     * Tampilkan grid jadwal operasional (layout kotak per sesi & tanggal).
      */
     public function index(Request $request)
     {
-        $query = Schedule::with(['tutor', 'subject', 'room', 'timeSlot', 'educationLevel', 'program', 'activeBookings.student']);
-
+        // Rentang tanggal: filter tanggal tunggal ATAU 7 hari mulai hari ini
         if ($request->filled('date')) {
-            $query->whereDate('date', $request->date);
+            $startDate = Carbon::parse($request->date)->startOfDay();
+            $endDate   = $startDate->copy()->endOfDay();
+        } else {
+            $startDate = Carbon::today();
+            $endDate   = Carbon::today()->addDays(6)->endOfDay();
         }
+
+        $query = Schedule::with(['tutor', 'subject', 'room', 'timeSlot', 'educationLevel', 'program', 'activeBookings.student'])
+            ->whereBetween('date', [$startDate, $endDate]);
 
         if ($request->filled('room_id')) {
             $query->where('room_id', $request->room_id);
@@ -45,28 +51,52 @@ class ScheduleController extends Controller
             $query->where('status', $request->status);
         }
 
-        $schedules = $query->orderBy('date', 'desc')
-            ->orderBy('time_slot_id', 'asc')
-            ->paginate(20)
-            ->withQueryString();
+        $allSchedules = $query->orderBy('date')->orderBy('time_slot_id')->get();
 
-        $rooms = Room::where('is_active', true)->orderBy('code')->get();
-        $tutors = User::role('tutor')->orderBy('name')->get();
-        $programs = Program::all();
+        // Bangun struktur grid: $grid[time_slot_id][Y-m-d] = Collection<Schedule>
         $timeSlots = TimeSlot::where('is_active', true)->orderBy('session_number')->get();
-        $subjects = Subject::orderBy('name')->get();
+
+        $dates = collect();
+        for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
+            $dates->push($d->copy());
+        }
+
+        $grid = [];
+        foreach ($timeSlots as $slot) {
+            $grid[$slot->id] = [];
+            foreach ($dates as $day) {
+                $grid[$slot->id][$day->format('Y-m-d')] = collect();
+            }
+        }
+
+        foreach ($allSchedules as $s) {
+            $dateKey = Carbon::parse($s->date)->format('Y-m-d');
+            $slotId  = $s->time_slot_id;
+            if (isset($grid[$slotId][$dateKey])) {
+                $grid[$slotId][$dateKey]->push($s);
+            }
+        }
+
+        $rooms           = Room::where('is_active', true)->orderBy('code')->get();
+        $tutors          = User::role('tutor')->orderBy('name')->get();
+        $programs        = Program::all();
+        $subjects        = Subject::orderBy('name')->get();
         $educationLevels = EducationLevel::all();
-        $students = User::role('student')->orderBy('name')->get();
+        $students        = User::role('student')->orderBy('name')->get();
 
         return view('admin.schedules.index', compact(
-            'schedules',
+            'grid',
+            'dates',
+            'timeSlots',
             'rooms',
             'tutors',
             'programs',
-            'timeSlots',
             'subjects',
             'educationLevels',
-            'students'
+            'students',
+            'startDate',
+            'endDate',
+            'allSchedules'
         ));
     }
 

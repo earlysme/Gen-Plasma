@@ -131,6 +131,18 @@ class UserSeeder extends Seeder
                 'phone' => '08121111013',
                 'subjects' => ['IND'],
             ],
+            [
+                'name' => 'Dina Maryani',
+                'email' => 'dinamaryani.edu@gmail.com',
+                'phone' => '08121111014',
+                'subjects' => ['KIM'],
+            ],
+            [
+                'name' => 'Rizky Fadhilah',
+                'email' => 'rizkyfadhilah.teach@gmail.com',
+                'phone' => '08121111015',
+                'subjects' => ['MTK', 'GEO'],
+            ],
         ];
 
         foreach ($tutorsData as $tData) {

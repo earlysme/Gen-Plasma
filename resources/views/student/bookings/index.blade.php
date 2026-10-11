@@ -21,19 +21,28 @@
     </div>
 @endif
 
-{{-- FILTER TABS --}}
-<div style="display: flex; gap: 8px; margin-bottom: 16px; background: #f1f5f9; padding: 4px; border-radius: 8px; width: fit-content;">
-    <button type="button" onclick="switchStudentTab('all')" id="btn-std-all"
-            class="btn btn-primary">
-        Semua ({{ $schedules->count() }})
-    </button>
-    <button type="button" onclick="switchStudentTab('reguler')" id="btn-std-reguler"
-            class="btn btn-secondary">
-        Kelas Reguler ({{ $regularSchedules->count() }})
-    </button>
-    <button type="button" onclick="switchStudentTab('special')" id="btn-std-special"
-            class="btn btn-secondary">
-        Privat &amp; Konsultasi ({{ $specialSchedules->count() }})
+{{-- FILTER TABS + TOMBOL KONSULTASI --}}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+    <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 8px; width: fit-content;">
+        <button type="button" onclick="switchStudentTab('all')" id="btn-std-all"
+                class="btn btn-primary">
+            Semua ({{ $schedules->count() }})
+        </button>
+        <button type="button" onclick="switchStudentTab('reguler')" id="btn-std-reguler"
+                class="btn btn-secondary">
+            Kelas Reguler ({{ $regularSchedules->count() }})
+        </button>
+        <button type="button" onclick="switchStudentTab('special')" id="btn-std-special"
+                class="btn btn-secondary">
+            Privat &amp; Konsultasi ({{ $specialSchedules->count() }})
+        </button>
+    </div>
+
+    <button type="button" onclick="openConsultModal()"
+            class="btn btn-secondary"
+            style="border: 1.5px solid #6366f1; color: #4338ca; background: #eef2ff; font-weight: 600;"
+            {{ $weeklyBookingCount >= $maxWeekly ? 'disabled' : '' }}>
+        + Buat Konsultasi
     </button>
 </div>
 
@@ -111,134 +120,143 @@
     @endif
 </div>
 
-{{-- FORM BUAT JADWAL KONSULTASI --}}
-<div class="card" style="margin-top: 24px; border: 1.5px solid #c7d2fe;">
-    <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 4px;"
-         onclick="toggleConsultForm()">
-        <div>
-            <h2 style="font-size: 16px; color: #4338ca; margin: 0;">📅 Buat Jadwal Konsultasi</h2>
-            <p style="font-size: 12px; color: #6366f1; margin: 4px 0 0;">
-                Jadwal 1-on-1 bersama tutor pilihan Anda. Pembatalan berlaku H-1.
-            </p>
-        </div>
-        <span id="consult-toggle-icon" style="font-size: 20px; color: #4338ca; font-weight: bold; transition: transform 0.2s;">▼</span>
-    </div>
+{{-- MODAL BUAT JADWAL KONSULTASI --}}
+<div id="consult-modal-overlay"
+     onclick="closeConsultModal(event)"
+     style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #fff; border-radius: 12px; width: 100%; max-width: 560px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;"
+         onclick="event.stopPropagation()">
 
-    <div id="consult-form-body" style="display: none; margin-top: 16px; border-top: 1px solid #e0e7ff; padding-top: 16px;">
-        @if($weeklyBookingCount >= $maxWeekly)
-            <div style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px;">
-                <strong>Kuota mingguan sudah penuh.</strong> Anda tidak dapat membuat jadwal konsultasi baru pada minggu ini.
+        {{-- Header Modal --}}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid #e5e7eb; background: #f5f3ff;">
+            <div>
+                <h2 style="font-size: 16px; font-weight: 700; color: #3730a3; margin: 0;">Buat Jadwal Konsultasi</h2>
+                <p style="font-size: 12px; color: #6366f1; margin: 3px 0 0;">Sesi 1-on-1 bersama tutor. Pembatalan berlaku minimal H-1.</p>
             </div>
-        @else
-            <form action="{{ route('student.consultations.store') }}" method="POST">
-                @csrf
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    {{-- Tanggal --}}
-                    <div>
-                        <label for="consult_date" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
-                            Tanggal Konsultasi <span style="color: #ef4444;">*</span>
-                        </label>
-                        <input type="date" id="consult_date" name="date"
-                               min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
-                               value="{{ old('date') }}"
-                               style="width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; box-sizing: border-box;"
-                               required>
-                        @error('date')<p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>@enderror
-                    </div>
+            <button onclick="closeConsultModal()" type="button"
+                    style="background: none; border: none; font-size: 20px; color: #6b7280; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+        </div>
 
-                    {{-- Sesi Waktu --}}
-                    <div>
-                        <label for="consult_time_slot" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
-                            Sesi / Jam <span style="color: #ef4444;">*</span>
-                        </label>
-                        <select id="consult_time_slot" name="time_slot_id"
-                                style="width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; box-sizing: border-box;"
-                                required>
-                            <option value="">-- Pilih Sesi --</option>
-                            @foreach($timeSlots as $ts)
-                                <option value="{{ $ts->id }}" {{ old('time_slot_id') == $ts->id ? 'selected' : '' }}>
-                                    {{ $ts->name }} ({{ substr($ts->start_time, 0, 5) }} – {{ substr($ts->end_time, 0, 5) }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('time_slot_id')<p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>@enderror
-                    </div>
-
-                    {{-- Mata Pelajaran --}}
-                    <div>
-                        <label for="consult_subject" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
-                            Mata Pelajaran <span style="color: #ef4444;">*</span>
-                        </label>
-                        <select id="consult_subject" name="subject_id"
-                                onchange="filterTutors(this.value)"
-                                style="width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; box-sizing: border-box;"
-                                required>
-                            <option value="">-- Pilih Mata Pelajaran --</option>
-                            @foreach($subjects as $subj)
-                                <option value="{{ $subj->id }}" {{ old('subject_id') == $subj->id ? 'selected' : '' }}>
-                                    {{ $subj->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('subject_id')<p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>@enderror
-                    </div>
-
-                    {{-- Pengajar --}}
-                    <div>
-                        <label for="consult_tutor" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
-                            Pengajar / Tutor <span style="color: #ef4444;">*</span>
-                        </label>
-                        <select id="consult_tutor" name="tutor_id"
-                                style="width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; box-sizing: border-box;"
-                                required>
-                            <option value="">-- Pilih Mata Pelajaran dulu --</option>
-                        </select>
-                        @error('tutor_id')<p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>@enderror
-                    </div>
-
-                    {{-- Catatan --}}
-                    <div style="grid-column: 1 / -1;">
-                        <label for="consult_notes" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
-                            Catatan / Topik yang Ingin Dikonsultasikan
-                        </label>
-                        <textarea id="consult_notes" name="notes" rows="3" maxlength="500"
-                                  placeholder="Contoh: Ingin membahas soal integral tentu bab 4..."
-                                  style="width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; resize: vertical; box-sizing: border-box;">{{ old('notes') }}</textarea>
-                        @error('notes')<p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>@enderror
-                    </div>
+        {{-- Body Modal --}}
+        <div style="padding: 24px;">
+            @if($weeklyBookingCount >= $maxWeekly)
+                <div style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 16px; font-size: 13px;">
+                    <strong>Kuota mingguan sudah penuh.</strong> Anda tidak dapat membuat jadwal konsultasi baru pada minggu ini.
                 </div>
+            @else
+                <form action="{{ route('student.consultations.store') }}" method="POST">
+                    @csrf
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
 
-                <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
-                    <button type="submit" class="btn btn-primary" style="background: #4f46e5; padding: 9px 22px;">
-                        📌 Ajukan Konsultasi
-                    </button>
-                    <small style="color: #6b7280;">
-                        ⚠️ Pembatalan hanya bisa dilakukan <strong>minimal H-1</strong> (24 jam sebelum sesi).
-                    </small>
-                </div>
-            </form>
-        @endif
+                        {{-- Tanggal --}}
+                        <div>
+                            <label for="consult_date" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
+                                Tanggal <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input type="date" id="consult_date" name="date"
+                                   min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                                   value="{{ old('date') }}"
+                                   style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('date') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
+                                   required>
+                            @error('date')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                        </div>
+
+                        {{-- Sesi --}}
+                        <div>
+                            <label for="consult_time_slot" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
+                                Sesi / Jam <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select id="consult_time_slot" name="time_slot_id"
+                                    style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('time_slot_id') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
+                                    required>
+                                <option value="">-- Pilih Sesi --</option>
+                                @foreach($timeSlots as $ts)
+                                    <option value="{{ $ts->id }}" {{ old('time_slot_id') == $ts->id ? 'selected' : '' }}>
+                                        {{ $ts->name }} ({{ substr($ts->start_time, 0, 5) }} – {{ substr($ts->end_time, 0, 5) }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('time_slot_id')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                        </div>
+
+                        {{-- Mata Pelajaran --}}
+                        <div>
+                            <label for="consult_subject" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
+                                Mata Pelajaran <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select id="consult_subject" name="subject_id"
+                                    onchange="filterTutors(this.value)"
+                                    style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('subject_id') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
+                                    required>
+                                <option value="">-- Pilih Mata Pelajaran --</option>
+                                @foreach($subjects as $subj)
+                                    <option value="{{ $subj->id }}" {{ old('subject_id') == $subj->id ? 'selected' : '' }}>
+                                        {{ $subj->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('subject_id')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                        </div>
+
+                        {{-- Pengajar --}}
+                        <div>
+                            <label for="consult_tutor" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
+                                Pengajar / Tutor <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select id="consult_tutor" name="tutor_id"
+                                    style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('tutor_id') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
+                                    required>
+                                <option value="">-- Pilih mata pelajaran dulu --</option>
+                            </select>
+                            @error('tutor_id')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                        </div>
+
+                        {{-- Catatan --}}
+                        <div style="grid-column: 1 / -1;">
+                            <label for="consult_notes" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
+                                Catatan / Topik
+                            </label>
+                            <textarea id="consult_notes" name="notes" rows="3" maxlength="500"
+                                      placeholder="Topik atau materi yang ingin dikonsultasikan..."
+                                      style="width: 100%; padding: 8px 10px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 13px; background: #f9fafb; resize: vertical; box-sizing: border-box;">{{ old('notes') }}</textarea>
+                            @error('notes')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                        <small style="color: #9ca3af; font-size: 11px;">Pembatalan hanya bisa dilakukan <strong>minimal H-1</strong>.</small>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" onclick="closeConsultModal()"
+                                    class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+                                Batal
+                            </button>
+                            <button type="submit" class="btn btn-primary"
+                                    style="background: #4f46e5; padding: 8px 20px; font-size: 13px;">
+                                Ajukan Konsultasi
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            @endif
+        </div>
     </div>
 </div>
 
-{{-- Data tutor per mapel untuk JS filter --}}
 <script>
-const subjectTutors = @json($subjects->map(function($s) {
+const subjectTutors = @json($subjects->map(function ($s) {
     return [
         'id' => $s->id,
-        'tutors' => $s->tutors->map(fn($t) => ['id' => $t->id, 'name' => $t->name])->values()
+        'tutors' => $s->tutors->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->values(),
     ];
 })->keyBy('id'));
 
 function filterTutors(subjectId) {
     const select = document.getElementById('consult_tutor');
     select.innerHTML = '<option value="">-- Pilih Tutor --</option>';
-
-    if (!subjectId || !subjectTutors[subjectId]) return;
-
+    if (! subjectId || ! subjectTutors[subjectId]) { return; }
     const tutors = subjectTutors[subjectId].tutors;
     if (tutors.length === 0) {
-        select.innerHTML = '<option value="">Tidak ada tutor tersedia</option>';
+        select.innerHTML = '<option value="">Tidak ada tutor untuk mapel ini</option>';
         return;
     }
     tutors.forEach(t => {
@@ -249,24 +267,19 @@ function filterTutors(subjectId) {
     });
 }
 
-function toggleConsultForm() {
-    const body = document.getElementById('consult-form-body');
-    const icon = document.getElementById('consult-toggle-icon');
-    const isHidden = body.style.display === 'none';
-    body.style.display = isHidden ? 'block' : 'none';
-    icon.style.transform = isHidden ? 'rotate(180deg)' : '';
+function openConsultModal() {
+    const overlay = document.getElementById('consult-modal-overlay');
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-// Auto-expand form jika ada validation error pada field konsultasi
-@if($errors->has('date') || $errors->has('time_slot_id') || $errors->has('subject_id') || $errors->has('tutor_id') || $errors->has('notes'))
-    document.addEventListener('DOMContentLoaded', () => toggleConsultForm());
-    @if(old('subject_id'))
-        document.addEventListener('DOMContentLoaded', () => filterTutors('{{ old('subject_id') }}'));
-    @endif
-@endif
-</script>
+function closeConsultModal(event) {
+    if (event && event.target !== document.getElementById('consult-modal-overlay') && event.type !== 'click') { return; }
+    const overlay = document.getElementById('consult-modal-overlay');
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
 
-<script>
 function switchStudentTab(cat) {
     const rows = document.querySelectorAll('.student-schedule-row');
     const btnAll = document.getElementById('btn-std-all');
@@ -296,5 +309,13 @@ function switchStudentTab(cat) {
         });
     }
 }
+
+// Buka modal otomatis jika ada validation error dari form konsultasi
+@if($errors->has('date') || $errors->has('time_slot_id') || $errors->has('subject_id') || $errors->has('tutor_id') || $errors->has('notes'))
+    document.addEventListener('DOMContentLoaded', () => openConsultModal());
+    @if(old('subject_id'))
+        document.addEventListener('DOMContentLoaded', () => filterTutors('{{ old('subject_id') }}'));
+    @endif
+@endif
 </script>
 @endsection
