@@ -200,5 +200,8 @@ class DatabaseSeeder extends Seeder
             );
             $student->studentSubjects()->sync($subjIds);
         }
+
+        // 9. Seed Spatie Roles & Permissions
+        $this->call(RolePermissionSeeder::class);
     }
 }
