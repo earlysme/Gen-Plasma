@@ -165,7 +165,6 @@
                         </span>
                         Kelola Pengguna
                     </a>
-                    <div class="nav-label">Sistem &amp; Data</div>
                     <a class="nav-item {{ request()->routeIs('admin.statistics.*') ? 'active' : '' }}" href="{{ route('admin.statistics.index') }}">
                         <span class="nav-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -181,12 +180,18 @@
                 @elseif($role === 'tutor')
                     <a class="nav-item {{ request()->routeIs('tutor.dashboard') ? 'active' : '' }}" href="{{ route('tutor.dashboard') }}">
                         <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+                        </span>
+                        Dashboard
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('tutor.schedules.*') ? 'active' : '' }}" href="{{ route('tutor.schedules.index') }}">
+                        <span class="nav-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </span>
                         Jadwal Mengajar
                     </a>
-                    <a class="nav-item" href="{{ route('tutor.dashboard', ['open_modal' => 1]) }}"
-                       @if(request()->routeIs('tutor.dashboard')) onclick="event.preventDefault(); if(typeof openCreateSlot === 'function') openCreateSlot();" @endif>
+                    <a class="nav-item" href="{{ route('tutor.schedules.index', ['open_modal' => 1]) }}"
+                       @if(request()->routeIs('tutor.schedules.index')) onclick="event.preventDefault(); if(typeof openCreateSlot === 'function') openCreateSlot();" @endif>
                         <span class="nav-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                         </span>

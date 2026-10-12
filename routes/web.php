@@ -60,7 +60,14 @@ Route::middleware(['auth'])->group(function () {
 
     // 2. AREA PENGAJAR / TUTOR
     Route::prefix('tutor')->name('tutor.')->middleware(['role:tutor'])->group(function () {
-        Route::get('/dashboard', [TutorScheduleController::class, 'index'])->name('dashboard');
+        // Dashboard Pengajar (Visual Agenda Mengajar & Recent Activity)
+        // Catatan: Rekan backend dapat menghubungkan Route::get('/dashboard', [DashboardController::class, 'index']) nantinya
+        Route::get('/dashboard', function () {
+            return view('tutor.dashboard');
+        })->name('dashboard');
+
+        // Jadwal Mengajar & Matriks Ruangan Bimbel
+        Route::get('/schedules', [TutorScheduleController::class, 'index'])->name('schedules.index');
         Route::get('/schedules/create', [TutorScheduleController::class, 'create'])->name('schedules.create');
         Route::post('/schedules', [TutorScheduleController::class, 'store'])->name('schedules.store');
         Route::post('/schedules/{schedule}/complete', [TutorScheduleController::class, 'complete'])->name('schedules.complete');
