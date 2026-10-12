@@ -70,7 +70,7 @@
         body { font:14px/1.5 "DM Sans",sans-serif; background:var(--bg); color:var(--text); overflow-x:clip; }
         a { color:inherit; text-decoration:none; } button,input,select,textarea { font:inherit; } button { cursor:pointer; }
         .app-shell { min-height:100vh; }.sidebar { width:248px; position:fixed; inset:0 auto 0 0; z-index:30; display:flex; flex-direction:column; padding:24px 16px 16px; background:var(--surface); border-right:1px solid var(--line); transition:transform .25s ease; }
-        .brand { display:flex; align-items:center; gap:12px; padding:0 8px 24px; text-decoration:none; }.brand-logo { width:38px; height:38px; object-fit:contain; flex-shrink:0; border-radius:10px; }.avatar { display:grid; place-items:center; flex-shrink:0; border-radius:12px; font-weight:800; }.brand strong { display:block; font:800 17px/1.2 "Plus Jakarta Sans"; letter-spacing:-.5px; }.brand small,.profile-meta span { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; } .brand small { margin-top:2px; display:block; } .main-nav { display:flex; flex:1; flex-direction:column; gap:3px; overflow-y:auto; }.nav-label { padding:14px 12px 6px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; }.nav-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; color:var(--muted); font-size:13px; font-weight:600; }.nav-item:hover { background:var(--surface-2); color:var(--text); }.nav-item.active { background:var(--primary-soft); color:var(--primary); font-weight:700; }.nav-icon { width:18px; text-align:center; font-size:16px; }.sidebar-bottom { display:flex; align-items:center; padding-top:14px; border-top:1px solid var(--line); }.profile-mini { display:flex; gap:10px; align-items:center; overflow:hidden; }.avatar { width:36px; height:36px; background:var(--primary-soft); color:var(--primary); font-size:13px; }.profile-meta strong { display:block; overflow:hidden; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }.profile-meta span { display:block; font-size:12px; font-weight:400; letter-spacing:normal; text-transform:none; }
+        .brand { display:flex; align-items:center; gap:12px; padding:0 8px 24px; text-decoration:none; }.brand-logo { width:38px; height:38px; object-fit:contain; flex-shrink:0; border-radius:10px; }.avatar { display:grid; place-items:center; flex-shrink:0; border-radius:12px; font-weight:800; }.brand strong { display:block; font:800 17px/1.2 "Plus Jakarta Sans"; letter-spacing:-.5px; }.brand small,.profile-meta span { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; } .brand small { margin-top:2px; display:block; } .main-nav { display:flex; flex:1; flex-direction:column; gap:3px; overflow-y:auto; }.nav-label { padding:14px 12px 6px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; }.nav-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; color:var(--muted); font-size:13px; font-weight:600; }.nav-item:hover { background:var(--surface-2); color:var(--text); }.nav-item.active { background:var(--primary-soft); color:var(--primary); font-weight:700; }.nav-icon { width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }.sidebar-bottom { display:flex; align-items:center; padding-top:14px; border-top:1px solid var(--line); }.profile-mini { display:flex; gap:10px; align-items:center; overflow:hidden; }.avatar { width:36px; height:36px; background:var(--primary-soft); color:var(--primary); font-size:13px; }.profile-meta strong { display:block; overflow:hidden; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }.profile-meta span { display:block; font-size:12px; font-weight:400; letter-spacing:normal; text-transform:none; }
         .topbar { position:fixed; top:0; left:248px; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; height:74px; padding:0 32px; background:var(--surface); border-bottom:1px solid var(--line); box-shadow:var(--shadow); }.breadcrumb { display:flex; gap:8px; align-items:center; color:var(--muted); font-size:13px; }.breadcrumb strong { color:var(--text); }.top-actions { display:flex; gap:10px; align-items:center; }.icon-btn,.mobile-menu { display:grid; width:38px; height:38px; place-items:center; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:16px; }.icon-btn:hover { background:var(--surface-2); }.mobile-menu { display:none; background:var(--surface-2); }.btn-logout { display:flex; gap:6px; align-items:center; padding:8px 14px; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:13px; font-weight:700; }.btn-logout:hover { color:var(--pink-text); background:var(--pink-soft); border-color:var(--pink-soft); }
         .main-area { min-height:100vh; margin-left:248px; padding-top:74px; }.page-wrap { max-width:1400px; margin:auto; padding:28px 32px 40px; }.page-header,.welcome-row { display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:24px; }.page-header h1,.welcome-row h1 { font:800 clamp(22px,2.2vw,28px) "Plus Jakarta Sans"; letter-spacing:-.8px; }.page-header p,.welcome-row p { margin-top:4px; color:var(--muted); font-size:14px; }
         .card,.panel { padding:22px; margin-bottom:20px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }.grid { display:grid; gap:16px; }.grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }.grid-cols-4,.stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }.btn { display:inline-flex; gap:6px; align-items:center; justify-content:center; padding:9px 14px; border:0; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none; }.btn-primary { color:var(--primary-contrast); background:var(--primary); box-shadow:0 4px 12px color-mix(in srgb,var(--primary) 25%,transparent); }.btn-primary:hover { background:var(--primary-dark); }.btn-danger { color:var(--pink-text); background:var(--pink-soft); }.btn-success { color:var(--mint-text); background:var(--mint); }.btn-secondary { color:var(--text); background:var(--surface-2); }
@@ -128,23 +128,83 @@
             <nav class="main-nav">
                 <div class="nav-label">Menu Utama</div>
                 @if($role === 'admin')
-                    <a class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}"><span class="nav-icon">⌂</span>Dashboard</a>
+                    <a class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+                        </span>
+                        Dashboard
+                    </a>
                     <div class="nav-label">Manajemen Bimbel</div>
-                    <a class="nav-item {{ request()->routeIs('admin.programs.*') ? 'active' : '' }}" href="{{ route('admin.programs.index') }}"><span class="nav-icon">▦</span>Kelola Program</a>
-                    <a class="nav-item {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}" href="{{ route('admin.schedules.index') }}"><span class="nav-icon">▤</span>Kelola Jadwal</a>
-                    <a class="nav-item {{ request()->routeIs('admin.rooms.*') ? 'active' : '' }}" href="{{ route('admin.rooms.index') }}"><span class="nav-icon">▣</span>Kelola Ruangan</a>
-                    <a class="nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}" href="{{ route('admin.subjects.index') }}"><span class="nav-icon">▥</span>Kelola Mapel</a>
-                    <a class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-icon">◈</span>Kelola Pengguna</a>
+                    <a class="nav-item {{ request()->routeIs('admin.programs.*') ? 'active' : '' }}" href="{{ route('admin.programs.index') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                        </span>
+                        Kelola Program
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}" href="{{ route('admin.schedules.index') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </span>
+                        Kelola Jadwal
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('admin.rooms.*') ? 'active' : '' }}" href="{{ route('admin.rooms.index') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M7 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M14 12v.01"></path></svg>
+                        </span>
+                        Kelola Ruangan
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}" href="{{ route('admin.subjects.index') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        </span>
+                        Kelola Mapel
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </span>
+                        Kelola Pengguna
+                    </a>
                     <div class="nav-label">Sistem &amp; Data</div>
-                    <a class="nav-item {{ request()->routeIs('admin.statistics.*') ? 'active' : '' }}" href="{{ route('admin.statistics.index') }}"><span class="nav-icon">☷</span>Statistik Mingguan</a>
-                    <a class="nav-item {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}" href="{{ route('admin.backups.index') }}"><span class="nav-icon">◰</span>Backup Data</a>
+                    <a class="nav-item {{ request()->routeIs('admin.statistics.*') ? 'active' : '' }}" href="{{ route('admin.statistics.index') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        </span>
+                        Statistik Mingguan
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}" href="{{ route('admin.backups.index') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                        </span>
+                        Backup Data
+                    </a>
                 @elseif($role === 'tutor')
-                    <a class="nav-item {{ request()->routeIs('tutor.dashboard') ? 'active' : '' }}" href="{{ route('tutor.dashboard') }}"><span class="nav-icon">⌂</span>Jadwal Mengajar</a>
+                    <a class="nav-item {{ request()->routeIs('tutor.dashboard') ? 'active' : '' }}" href="{{ route('tutor.dashboard') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </span>
+                        Jadwal Mengajar
+                    </a>
                     <a class="nav-item" href="{{ route('tutor.dashboard', ['open_modal' => 1]) }}"
-                       @if(request()->routeIs('tutor.dashboard')) onclick="event.preventDefault(); if(typeof openCreateSlot === 'function') openCreateSlot();" @endif><span class="nav-icon">＋</span>Buka Slot Jadwal</a>
+                       @if(request()->routeIs('tutor.dashboard')) onclick="event.preventDefault(); if(typeof openCreateSlot === 'function') openCreateSlot();" @endif>
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        </span>
+                        Buka Slot Jadwal
+                    </a>
                 @else
-                    <a class="nav-item {{ request()->routeIs('student.dashboard') ? 'active' : '' }}" href="{{ route('student.dashboard') }}"><span class="nav-icon">⌂</span>Dashboard</a>
-                    <a class="nav-item {{ request()->routeIs('student.bookings.my') ? 'active' : '' }}" href="{{ route('student.bookings.my') }}"><span class="nav-icon">▤</span>Jadwal Belajar</a>
+                    <a class="nav-item {{ request()->routeIs('student.dashboard') ? 'active' : '' }}" href="{{ route('student.dashboard') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+                        </span>
+                        Dashboard
+                    </a>
+                    <a class="nav-item {{ request()->routeIs('student.bookings.my') ? 'active' : '' }}" href="{{ route('student.bookings.my') }}">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </span>
+                        Jadwal Belajar
+                    </a>
                 @endif
             </nav>
             <div class="sidebar-bottom"><div class="profile-mini"><span class="avatar">{{ $initials }}</span><span class="profile-meta"><strong>{{ $user->name }}</strong><span>{{ $section }}</span></span></div></div>
