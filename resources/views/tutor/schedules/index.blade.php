@@ -875,12 +875,12 @@
                         $nextDate = \Carbon\Carbon::parse($checkDate)->addDay()->toDateString();
                         $isTodaySelected = \Carbon\Carbon::parse($checkDate)->isToday();
                     @endphp
-                    <a href="{{ route('tutor.dashboard', ['check_date' => $prevDate]) }}" class="jd-nav-arrow" title="Hari sebelumnya">‹</a>
+                    <a href="{{ route('tutor.schedules.index', ['check_date' => $prevDate]) }}" class="jd-nav-arrow" title="Hari sebelumnya">‹</a>
                     
-                    <button type="button" id="jd-date-btn" class="jd-date-trigger" data-url="{{ route('tutor.dashboard') }}" title="Klik untuk pilih tanggal">
+                    <button type="button" id="jd-date-btn" class="jd-date-trigger" data-url="{{ route('tutor.schedules.index') }}" title="Klik untuk pilih tanggal">
                         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
                             <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                            <line x1="16" x2="16" y1="2" y2="6"/>
+                            <line x1="16" x2="16" y1="2" x2="6"/>
                             <line x1="8" x2="8" y1="2" y2="6"/>
                             <line x1="3" x2="21" y1="10" y2="10"/>
                         </svg>
@@ -891,10 +891,10 @@
                     </button>
                     <input type="date" id="jd-date" value="{{ $checkDate }}" tabindex="-1" aria-hidden="true">
 
-                    <a href="{{ route('tutor.dashboard', ['check_date' => $nextDate]) }}" class="jd-nav-arrow" title="Hari berikutnya">›</a>
+                    <a href="{{ route('tutor.schedules.index', ['check_date' => $nextDate]) }}" class="jd-nav-arrow" title="Hari berikutnya">›</a>
 
                     @if (!$isTodaySelected)
-                        <a href="{{ route('tutor.dashboard', ['check_date' => date('Y-m-d')]) }}" class="jd-today-btn" title="Kembali ke hari ini">Hari ini</a>
+                        <a href="{{ route('tutor.schedules.index', ['check_date' => date('Y-m-d')]) }}" class="jd-today-btn" title="Kembali ke hari ini">Hari ini</a>
                     @endif
                 </div>
 
@@ -1031,88 +1031,20 @@
             </section>
         @endif
 
-        {{-- 4. AGENDA MENGAJAR SAYA --}}
-        <section class="jd-card">
-            <div class="jd-card-head">
-                <h2 class="jd-title">Agenda mengajar saya ({{ $schedules->count() }})</h2>
+        {{-- 4. PINTASAN KE DASHBOARD AGENDA MENGAJAR --}}
+        <section class="card" style="padding:18px 22px;margin-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <div style="width:42px;height:42px;border-radius:11px;background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;flex-shrink:0;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="16" y1="13" x2="13"/><line x1="8" x2="16" y1="17" x2="17"/></svg>
+                </div>
+                <div>
+                    <strong style="color:var(--text);font-size:14px;display:block;">Agenda Mengajar &amp; Daftar Murid</strong>
+                    <p style="color:var(--muted);font-size:12px;margin:2px 0 0;">Daftar murid bimbingan, absensi sesi selesai, dan status bimbingan kini dipindahkan ke Dashboard Pengajar.</p>
+                </div>
             </div>
-
-            @if ($schedules->isEmpty())
-                <div style="text-align:center;padding:32px 16px;color:var(--muted);">
-                    <div style="font-size:28px;margin-bottom:6px;">📅</div>
-                    <strong style="color:var(--text);font-size:14.5px;display:block;">Belum ada jadwal mengajar</strong>
-                    <p style="margin:4px 0 16px;font-size:13px;">Klik tanda + di grid ruangan, atau buka slot baru.</p>
-                    <button type="button" class="btn btn-primary" onclick="openCreateSlot('{{ $checkDate }}')">
-                        + Buka slot
-                    </button>
-                </div>
-            @else
-                <div class="jd-agenda-grid">
-                    @foreach ($schedules as $s)
-                        @php
-                            $date = \Carbon\Carbon::parse($s->date);
-                            $dateTag = $date->isToday() ? 'Hari ini' : $date->isoFormat('D MMM Y');
-                            [$stLabel, $stClass] = $statusMap[$s->status] ?? ['Aktif', 'badge-student'];
-                            $fill = $s->quota_max > 0 ? min(100, round(($s->booked_count / $s->quota_max) * 100)) : 0;
-                        @endphp
-                        <article class="jd-agenda-card">
-                            <div>
-                                <div class="jd-agenda-head">
-                                    <div>
-                                        <h3>{{ $s->subject->name }}</h3>
-                                        <div class="jd-agenda-time">{{ $dateTag }} • {{ $s->timeSlot->name }}</div>
-                                    </div>
-                                    <span class="badge {{ $stClass }}">{{ $stLabel }}</span>
-                                </div>
-
-                                <div class="jd-agenda-meta">
-                                    <span>{{ $s->room->name }}</span>
-                                    <span>{{ $s->program->name }}</span>
-                                    <span class="jd-seat-bar-wrap">
-                                        <span class="jd-seat-bar"><i style="width: {{ $fill }}%"></i></span>
-                                        <strong>{{ $s->booked_count }}/{{ $s->quota_max }}</strong> kursi
-                                    </span>
-                                </div>
-
-                                <div class="jd-students">
-                                    @forelse($s->activeBookings as $b)
-                                        <span class="jd-chip">{{ data_get($b, 'student.name') }}</span>
-                                    @empty
-                                        <span style="color:var(--muted);font-size:12px;">Belum ada murid terdaftar.</span>
-                                    @endforelse
-                                </div>
-                            </div>
-
-                            @if ($s->status === 'scheduled')
-                                <div class="jd-agenda-actions">
-                                    <button type="button" class="btn btn-success jd-sm" data-open="dlg-complete"
-                                        data-action="{{ route('tutor.schedules.complete', $s->id) }}"
-                                        data-sub="{{ $s->subject->name }}, {{ $dateTag }}">
-                                        Tandai Selesai
-                                    </button>
-
-                                    @if (!$s->isFull())
-                                        <button type="button" class="btn btn-secondary jd-sm" data-open="dlg-assign"
-                                            data-action="{{ route('tutor.schedules.assignStudent', $s->id) }}"
-                                            data-sub="{{ $s->subject->name }}, {{ $dateTag }}">
-                                            + Murid
-                                        </button>
-                                    @endif
-
-                                    @if ($s->booked_count === 0)
-                                        <button type="button" class="btn btn-danger jd-sm" style="margin-left:auto;"
-                                            data-open="dlg-cancel"
-                                            data-action="{{ route('tutor.schedules.cancel', $s->id) }}"
-                                            data-sub="{{ $s->subject->name }}, {{ $dateTag }} ({{ $s->timeSlot->name }})">
-                                            Batalkan
-                                        </button>
-                                    @endif
-                                </div>
-                            @endif
-                        </article>
-                    @endforeach
-                </div>
-            @endif
+            <a href="{{ route('tutor.dashboard') }}" class="btn btn-primary" style="font-size:12.5px;">
+                Buka Dashboard Pengajar →
+            </a>
         </section>
     </div>
 
