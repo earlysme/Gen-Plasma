@@ -136,7 +136,8 @@
                     <a class="nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}" href="{{ route('admin.subjects.index') }}"><span class="nav-icon">▥</span>Kelola Mapel</a>
                     <a class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-icon">◈</span>Kelola Pengguna</a>
                     <div class="nav-label">Sistem &amp; Data</div>
-                    <a class="nav-item {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}" href="{{ route('admin.backups.index') }}"><span class="nav-icon">📊</span>Backup Data</a>
+                    <a class="nav-item {{ request()->routeIs('admin.statistics.*') ? 'active' : '' }}" href="{{ route('admin.statistics.index') }}"><span class="nav-icon">☷</span>Statistik Mingguan</a>
+                    <a class="nav-item {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}" href="{{ route('admin.backups.index') }}"><span class="nav-icon">◰</span>Backup Data</a>
                 @elseif($role === 'tutor')
                     <a class="nav-item {{ request()->routeIs('tutor.dashboard') ? 'active' : '' }}" href="{{ route('tutor.dashboard') }}"><span class="nav-icon">⌂</span>Jadwal Mengajar</a>
                     <a class="nav-item" href="{{ route('tutor.dashboard', ['open_modal' => 1]) }}"

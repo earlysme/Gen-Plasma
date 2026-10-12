@@ -145,7 +145,7 @@ function handleProgramChange(select) {
         noteBox.style.background = '#fef3c7';
         noteBox.style.color = '#92400e';
         noteBox.style.border = '1px solid #fde68a';
-        noteBox.innerHTML = '<strong>Privat di Rumah:</strong> Sesi bertempat di rumah murid. Ruangan otomatis diarahkan ke <em>Rumah Siswa</em> (tidak memotong kuota 8 ruangan fisik bimbel).';
+        noteBox.innerHTML = '<strong>Privat di Rumah:</strong> Sesi bertempat di rumah murid. Ruangan otomatis diarahkan ke <em>Rumah Siswa</em> (tidak memotong kuota 8 ruangan fisik bimbel). Kuota terkunci 1 siswa. <em>(Maksimal 2x sesi privat per hari)</em>.';
         quotaInput.value = 1;
         quotaInput.disabled = true;
     } else if (code === 'consult') {
@@ -161,7 +161,7 @@ function handleProgramChange(select) {
         noteBox.style.background = '#f5f3ff';
         noteBox.style.color = '#6d28d9';
         noteBox.style.border = '1px solid #ddd6fe';
-        noteBox.innerHTML = '<strong>Privat di Bimbel:</strong> Menggunakan ruangan fisik bimbel (disarankan R1, R2, atau R6). Kuota langsung terkunci 1 siswa (1/1 Full).';
+        noteBox.innerHTML = '<strong>Privat di Bimbel:</strong> Menggunakan ruangan fisik bimbel (disarankan R1, R2, atau R6). Kuota langsung terkunci 1 siswa (1/1 Full). <em>(Maksimal 2x sesi privat per hari)</em>.';
         quotaInput.value = 1;
         quotaInput.disabled = true;
     } else {

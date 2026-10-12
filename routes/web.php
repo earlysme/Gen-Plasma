@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ProgramController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\StatisticController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
@@ -52,6 +53,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
         Route::post('/backups', [BackupController::class, 'createBackup'])->name('backups.create');
         Route::post('/backups/spreadsheet', [BackupController::class, 'updateSpreadsheet'])->name('backups.updateSpreadsheet');
+
+        // Statistik & Laporan Mingguan
+        Route::get('/statistics', [StatisticController::class, 'index'])->name('statistics.index');
     });
 
     // 2. AREA PENGAJAR / TUTOR

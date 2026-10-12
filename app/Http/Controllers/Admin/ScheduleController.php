@@ -26,10 +26,10 @@ class ScheduleController extends Controller
         // Rentang tanggal: filter tanggal tunggal ATAU 7 hari mulai hari ini
         if ($request->filled('date')) {
             $startDate = Carbon::parse($request->date)->startOfDay();
-            $endDate   = $startDate->copy()->endOfDay();
+            $endDate = $startDate->copy()->endOfDay();
         } else {
             $startDate = Carbon::today();
-            $endDate   = Carbon::today()->addDays(6)->endOfDay();
+            $endDate = Carbon::today()->addDays(6)->endOfDay();
         }
 
         $query = Schedule::with(['tutor', 'subject', 'room', 'timeSlot', 'educationLevel', 'program', 'activeBookings.student'])
@@ -71,18 +71,18 @@ class ScheduleController extends Controller
 
         foreach ($allSchedules as $s) {
             $dateKey = Carbon::parse($s->date)->format('Y-m-d');
-            $slotId  = $s->time_slot_id;
+            $slotId = $s->time_slot_id;
             if (isset($grid[$slotId][$dateKey])) {
                 $grid[$slotId][$dateKey]->push($s);
             }
         }
 
-        $rooms           = Room::where('is_active', true)->orderBy('code')->get();
-        $tutors          = User::role('tutor')->orderBy('name')->get();
-        $programs        = Program::all();
-        $subjects        = Subject::orderBy('name')->get();
+        $rooms = Room::where('is_active', true)->orderBy('code')->get();
+        $tutors = User::role('tutor')->orderBy('name')->get();
+        $programs = Program::all();
+        $subjects = Subject::orderBy('name')->get();
         $educationLevels = EducationLevel::all();
-        $students        = User::role('student')->orderBy('name')->get();
+        $students = User::role('student')->orderBy('name')->get();
 
         return view('admin.schedules.index', compact(
             'grid',
@@ -118,6 +118,12 @@ class ScheduleController extends Controller
 
         $room = Room::findOrFail($validated['room_id']);
         $program = Program::findOrFail($validated['program_id']);
+        $timeSlot = TimeSlot::findOrFail($validated['time_slot_id']);
+
+        // 0. Validasi Sesi Khusus Sabtu (Sesi 7 s/d 10 hanya hari Sabtu)
+        if ($timeSlot->is_saturday_only && ! Carbon::parse($validated['date'])->isSaturday()) {
+            return back()->withInput()->with('error', "Sesi {$timeSlot->name} hanya dibuka untuk bimbingan pada hari Sabtu.");
+        }
 
         // 1. Validasi Anti-Bentrok Ruangan Fisik
         if ($room->is_physical) {
@@ -141,7 +147,25 @@ class ScheduleController extends Controller
 
         if ($tutorConflict) {
             $tutor = User::find($validated['tutor_id']);
+
             return back()->withInput()->with('error', "Pengajar {$tutor->name} sudah memiliki jadwal lain pada sesi tersebut.");
+        }
+
+        // 3. Validasi Batas Maksimal 2x Sesi Privat per Hari untuk Tutor
+        if ($program->is_private) {
+            $existingPrivateCount = Schedule::where('tutor_id', $validated['tutor_id'])
+                ->where('date', $validated['date'])
+                ->where('status', '!=', 'cancelled')
+                ->whereHas('program', function ($q) {
+                    $q->where('is_private', true);
+                })
+                ->count();
+
+            if ($existingPrivateCount >= 2) {
+                $tutor = User::find($validated['tutor_id']);
+
+                return back()->withInput()->with('error', "Batas kuota harian tercapai! Pengajar {$tutor->name} sudah memiliki {$existingPrivateCount} sesi privat pada tanggal {$validated['date']}. Tutor hanya dapat mengajar maksimal 2 sesi privat per hari.");
+            }
         }
 
         // Tentukan kuota kursi
@@ -187,7 +211,7 @@ class ScheduleController extends Controller
         }
 
         Booking::create([
-            'booking_code' => 'BK-' . strtoupper(Str::random(8)),
+            'booking_code' => 'BK-'.strtoupper(Str::random(8)),
             'schedule_id' => $schedule->id,
             'student_id' => $validated['student_id'],
             'booked_by_user_id' => Auth::id(),
