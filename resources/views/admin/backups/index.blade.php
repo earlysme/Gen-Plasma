@@ -106,17 +106,35 @@
     .bk-module-top {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         margin-bottom: 12px;
     }
 
-    .bk-module-top span {
-        font-size: 20px;
+    .bk-module-ico {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        flex-shrink: 0;
     }
 
     .bk-module-top strong {
         font-size: 13.5px;
         color: var(--text);
+    }
+
+    .bk-tbl-icon {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: var(--surface-2);
+        color: var(--primary);
+        flex-shrink: 0;
     }
 
     .bk-module-btn {
@@ -291,53 +309,65 @@
     <section class="bk-module-grid">
         <div class="bk-module-card">
             <div class="bk-module-top">
-                <span>📅</span>
+                <div class="bk-module-ico">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
                 <div>
                     <strong>Data Jadwal Bimbel</strong>
                     <div style="font-size:11px;color:var(--muted);">Sesi, ruang, &amp; mapel</div>
                 </div>
             </div>
             <a href="javascript:void(0)" onclick="alert('Modul backend ekspor jadwal siap dihubungkan oleh pengembang.')" class="bk-module-btn">
-                <span>⬇ Unduh .xlsx</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span>Unduh .xlsx</span>
             </a>
         </div>
 
         <div class="bk-module-card">
             <div class="bk-module-top">
-                <span>👨‍🎓</span>
+                <div class="bk-module-ico">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                </div>
                 <div>
                     <strong>Data Murid / Siswa</strong>
                     <div style="font-size:11px;color:var(--muted);">Profil, kontak, &amp; akun</div>
                 </div>
             </div>
             <a href="javascript:void(0)" onclick="alert('Modul backend ekspor siswa siap dihubungkan oleh pengembang.')" class="bk-module-btn">
-                <span>⬇ Unduh .xlsx</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span>Unduh .xlsx</span>
             </a>
         </div>
 
         <div class="bk-module-card">
             <div class="bk-module-top">
-                <span>👨‍🏫</span>
+                <div class="bk-module-ico">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
                 <div>
                     <strong>Data Pengajar / Tutor</strong>
                     <div style="font-size:11px;color:var(--muted);">Guru, jam les, &amp; mapel</div>
                 </div>
             </div>
             <a href="javascript:void(0)" onclick="alert('Modul backend ekspor pengajar siap dihubungkan oleh pengembang.')" class="bk-module-btn">
-                <span>⬇ Unduh .xlsx</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span>Unduh .xlsx</span>
             </a>
         </div>
 
         <div class="bk-module-card">
             <div class="bk-module-top">
-                <span>📝</span>
+                <div class="bk-module-ico">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
                 <div>
                     <strong>Riwayat Booking</strong>
                     <div style="font-size:11px;color:var(--muted);">Tiket les &amp; konsultasi</div>
                 </div>
             </div>
             <a href="javascript:void(0)" onclick="alert('Modul backend ekspor booking siap dihubungkan oleh pengembang.')" class="bk-module-btn">
-                <span>⬇ Unduh .xlsx</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span>Unduh .xlsx</span>
             </a>
         </div>
     </section>
@@ -369,8 +399,10 @@
                     @foreach($sampleBackups as $bk)
                         <tr>
                             <td>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <span style="font-size:18px;">📊</span>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div class="bk-tbl-icon">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="16" y1="13" x2="13"/><line x1="8" x2="16" y1="17" y2="17"/><line x1="10" x2="14" y1="9" y2="9"/></svg>
+                                    </div>
                                     <strong style="font-size:13px;color:var(--text);">{{ $bk['filename'] }}</strong>
                                 </div>
                             </td>
@@ -415,7 +447,12 @@
             @foreach($sampleBackups as $bk)
                 <div class="bk-m-card">
                     <div class="bk-m-head">
-                        <div class="bk-m-file">📊 {{ $bk['filename'] }}</div>
+                        <div class="bk-m-file" style="display:flex;align-items:center;gap:8px;">
+                            <div class="bk-tbl-icon" style="width:26px;height:26px;">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="16" y1="13" x2="13"/><line x1="8" x2="16" y1="17" y2="17"/><line x1="10" x2="14" y1="9" y2="9"/></svg>
+                            </div>
+                            <span>{{ $bk['filename'] }}</span>
+                        </div>
                         <span class="badge" style="background:var(--surface-2);color:var(--muted);font-size:10.5px;">{{ $bk['size'] }}</span>
                     </div>
 
@@ -433,11 +470,13 @@
 
                     <div class="bk-m-actions">
                         <button type="button" class="btn btn-primary" onclick="alert('Logika download file backend siap dihubungkan oleh pengembang.')">
-                            ⬇ Unduh Excel
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                            Unduh Excel
                         </button>
                         @if($bk['sheets_url'])
                             <a href="{{ $bk['sheets_url'] }}" target="_blank" rel="noopener" class="btn btn-secondary">
-                                🔗 Buka Sheets
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+                                Buka Sheets
                             </a>
                         @endif
                     </div>
@@ -449,8 +488,8 @@
     {{-- 4. Pengaturan Integrasi Google Spreadsheet --}}
     <section class="card" id="sec-sheets" style="padding:22px;margin-top:20px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:#e8f5e9;color:#2e7d32;display:grid;place-items:center;font-size:20px;">
-                📑
+            <div class="bk-stat-icon bk-icon-sheets" style="width:42px;height:42px;border-radius:12px;">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="9" x2="9" y1="3" y2="21"/><line x1="15" x2="15" y1="3" y2="21"/></svg>
             </div>
             <div>
                 <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:0;">Pengaturan Integrasi Google Spreadsheet</h2>
@@ -469,8 +508,9 @@
             </div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding-top:10px;border-top:1px solid var(--line);">
-                <div style="font-size:12px;color:var(--muted);">
-                    ℹ️ <em>Form ini siap diproses oleh logika backend teman Anda untuk sinkronisasi otomatis.</em>
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <em>Form ini siap diproses oleh logika backend teman Anda untuk sinkronisasi otomatis.</em>
                 </div>
                 <button type="submit" class="btn btn-primary">
                     Simpan Pengaturan Spreadsheet
