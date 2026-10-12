@@ -83,6 +83,9 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $schedules = $schedules ?? $allSchedules ?? collect();
+                @endphp
                 @forelse($schedules as $s)
                     @php
                         $isFull = $s->isFull();
@@ -123,21 +126,27 @@
                             @endif
                         </td>
                         <td style="padding:14px 20px;text-align:right;">
-                            <div style="display:inline-flex;gap:6px;">
+                            <div style="display:inline-flex;gap:6px;align-items:center;justify-content:flex-end;">
                                 @if($s->status === 'scheduled' && !$isFull)
-                                    <button type="button" class="btn btn-secondary" style="padding:5px 9px;font-size:12px;"
-                                        onclick="openAssign({{ $s->id }}, '{{ addslashes($s->subject->name) }}', '{{ $dateObj->isoFormat('D MMM') }}')">+ Murid</button>
+                                    <button type="button" class="btn-icon btn-icon-secondary" title="Tambah Murid ke Sesi" aria-label="Tambah Murid"
+                                        onclick="openAssign({{ $s->id }}, '{{ addslashes($s->subject->name) }}', '{{ $dateObj->isoFormat('D MMM') }}')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                                    </button>
                                 @endif
 
                                 @if($s->status === 'scheduled')
-                                    <button type="button" class="btn btn-success" style="padding:5px 9px;font-size:12px;"
-                                        onclick="openStatus({{ $s->id }}, 'completed')">Selesai</button>
+                                    <button type="button" class="btn-icon btn-icon-success" title="Tandai Selesai" aria-label="Tandai Selesai"
+                                        onclick="openStatus({{ $s->id }}, 'completed')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    </button>
 
-                                    <form action="{{ route('admin.schedules.destroy', $s->id) }}" method="POST"
+                                    <form action="{{ route('admin.schedules.destroy', $s->id) }}" method="POST" style="margin:0;"
                                         onsubmit="return confirm('Batalkan sesi jadwal ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" style="padding:5px 9px;font-size:12px;">Batalkan</button>
+                                        <button type="submit" class="btn-icon btn-icon-danger" title="Batalkan Sesi" aria-label="Batalkan Sesi">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>
+                                        </button>
                                     </form>
                                 @endif
                             </div>
@@ -154,7 +163,7 @@
         </table>
     </div>
 
-    @if($schedules->hasPages())
+    @if(isset($schedules) && method_exists($schedules, 'hasPages') && $schedules->hasPages())
         <div style="padding:16px 20px;border-top:1px solid var(--line);">
             {{ $schedules->links() }}
         </div>

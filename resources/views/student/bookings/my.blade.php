@@ -48,7 +48,7 @@
                         </td>
                         <td>
                             {{ $b->schedule->timeSlot->name }} <br>
-                            <small style="color: #64748b;">{{ substr($b->schedule->timeSlot->start_time, 0, 5) }} - {{ substr($b->schedule->timeSlot->end_time, 0, 5) }}</small>
+                            <small style="color: var(--muted);">{{ substr($b->schedule->timeSlot->start_time, 0, 5) }} - {{ substr($b->schedule->timeSlot->end_time, 0, 5) }}</small>
                         </td>
                         <td><strong>{{ $b->schedule->subject->name }}</strong></td>
                         <td>{{ $b->schedule->tutor->name }}</td>
@@ -56,7 +56,7 @@
                         <td>
                             @if($b->status === 'confirmed')
                                 @if($b->schedule->status === 'completed')
-                                    <span class="badge" style="background: #e2e8f0; color: #334155;">Sesi Selesai</span>
+                                    <span class="badge" style="background: var(--surface-2); color: var(--muted); border: 1px solid var(--line);">Sesi Selesai</span>
                                 @else
                                     <span class="badge badge-student">Terkonfirmasi</span>
                                 @endif
@@ -67,19 +67,19 @@
                         <td>
                             @if($b->status === 'confirmed' && $b->schedule->status !== 'completed')
                                 @if($canCancel)
-                                    <form action="{{ route('student.bookings.cancel', $b->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan jadwal ini? Kursi akan dilepas untuk siswa lain.');">
+                                    <form action="{{ route('student.bookings.cancel', $b->id) }}" method="POST" style="margin:0;display:inline-flex;" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan jadwal ini? Kursi akan dilepas untuk siswa lain.');">
                                         @csrf
-                                        <button type="submit" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px;">
-                                            Batalkan (H-1)
+                                        <button type="submit" class="btn-icon btn-icon-danger" title="Batalkan Booking (H-1)" aria-label="Batalkan Booking">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>
                                         </button>
                                     </form>
                                 @else
-                                    <span style="font-size: 11px; color: #94a3b8; font-weight: bold;">
+                                    <span style="font-size: 11px; color: var(--muted); font-weight: bold;">
                                         Terkunci (&lt; 24 Jam)
                                     </span>
                                 @endif
                             @else
-                                <span style="font-size: 12px; color: #94a3b8;">-</span>
+                                <span style="font-size: 12px; color: var(--muted);">-</span>
                             @endif
                         </td>
                     </tr>

@@ -9,38 +9,37 @@
         <p>Pilih sesi belajar yang tersedia dan pesan kursi Anda.</p>
     </div>
     <div>
-        <span class="badge" style="background: {{ $weeklyBookingCount >= $maxWeekly ? '#fee2e2' : '#dbeafe' }}; color: {{ $weeklyBookingCount >= $maxWeekly ? '#991b1b' : '#1e40af' }}; font-size: 13px; padding: 6px 12px;">
+        <span class="badge" style="background: {{ $weeklyBookingCount >= $maxWeekly ? 'var(--pink-soft)' : 'var(--blue-soft)' }}; color: {{ $weeklyBookingCount >= $maxWeekly ? 'var(--pink-text)' : 'var(--blue-text)' }}; font-size: 13px; padding: 6px 14px; border: 1px solid var(--line);">
             Jadwal Minggu Ini: <strong>{{ $weeklyBookingCount }} / {{ $maxWeekly }} Terbooking</strong>
         </span>
     </div>
 </div>
 
 @if($weeklyBookingCount >= $maxWeekly)
-    <div class="alert" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; margin-bottom: 16px;">
-        <strong>Batas Kuota Tercapai!</strong> Anda sudah memenuhi kuota maksimal {{ $maxWeekly }} jadwal pada minggu ini. Lihat di <a href="{{ route('student.bookings.my') }}" style="color: #b45309; font-weight: bold;">Jadwal Saya</a>.
+    <div class="alert alert-error" style="margin-bottom: 16px;">
+        <strong>Batas Kuota Tercapai!</strong> Anda sudah memenuhi kuota maksimal {{ $maxWeekly }} jadwal pada minggu ini. Lihat di <a href="{{ route('student.bookings.my') }}" style="color: inherit; text-decoration: underline; font-weight: bold;">Jadwal Saya</a>.
     </div>
 @endif
 
 {{-- FILTER TABS + TOMBOL KONSULTASI --}}
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-    <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 8px; width: fit-content;">
+    <div style="display: flex; gap: 6px; background: var(--surface-2); padding: 4px; border-radius: 12px; border: 1px solid var(--line); width: fit-content;">
         <button type="button" onclick="switchStudentTab('all')" id="btn-std-all"
-                class="btn btn-primary">
+                class="tab-pill active">
             Semua ({{ $schedules->count() }})
         </button>
         <button type="button" onclick="switchStudentTab('reguler')" id="btn-std-reguler"
-                class="btn btn-secondary">
+                class="tab-pill">
             Kelas Reguler ({{ $regularSchedules->count() }})
         </button>
         <button type="button" onclick="switchStudentTab('special')" id="btn-std-special"
-                class="btn btn-secondary">
+                class="tab-pill">
             Privat &amp; Konsultasi ({{ $specialSchedules->count() }})
         </button>
     </div>
 
     <button type="button" onclick="openConsultModal()"
-            class="btn btn-secondary"
-            style="border: 1.5px solid #6366f1; color: #4338ca; background: #eef2ff; font-weight: 600;"
+            class="btn-consult"
             {{ $weeklyBookingCount >= $maxWeekly ? 'disabled' : '' }}>
         + Buat Konsultasi
     </button>
@@ -48,21 +47,21 @@
 
 <div class="card">
     @if($schedules->isEmpty())
-        <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+        <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
             <p>Belum ada slot jadwal yang dibuka saat ini.</p>
         </div>
     @else
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table>
                 <thead>
-                    <tr style="background: #f8fafc;">
-                        <th style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left;">Tanggal &amp; Hari</th>
-                        <th style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left;">Sesi &amp; Jam</th>
-                        <th style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left;">Mata Pelajaran</th>
-                        <th style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left;">Pengajar (Tutor)</th>
-                        <th style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left;">Program &amp; Ruangan</th>
-                        <th style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: center;">Sisa Kursi</th>
-                        <th style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: center;">Aksi</th>
+                    <tr>
+                        <th>Tanggal &amp; Hari</th>
+                        <th>Sesi &amp; Jam</th>
+                        <th>Mata Pelajaran</th>
+                        <th>Pengajar (Tutor)</th>
+                        <th>Program &amp; Ruangan</th>
+                        <th style="text-align: center;">Sisa Kursi</th>
+                        <th style="text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="student-schedules-tbody">
@@ -72,43 +71,43 @@
                             $rowCat = $isReguler ? 'row-reguler' : 'row-special';
                         @endphp
                         <tr class="student-schedule-row {{ $rowCat }}">
-                            <td style="padding: 10px 12px; border: 1px solid #e2e8f0;">
-                                <strong style="color: #0f172a;">{{ \Carbon\Carbon::parse($s->date)->isoFormat('dddd, D MMM Y') }}</strong>
+                            <td>
+                                <strong>{{ \Carbon\Carbon::parse($s->date)->isoFormat('dddd, D MMM Y') }}</strong>
                             </td>
-                            <td style="padding: 10px 12px; border: 1px solid #e2e8f0;">
-                                <strong style="color: #334155;">{{ $s->timeSlot->name }}</strong><br>
-                                <small style="color: #64748b;">{{ substr($s->timeSlot->start_time, 0, 5) }} &ndash; {{ substr($s->timeSlot->end_time, 0, 5) }}</small>
+                            <td>
+                                <strong>{{ $s->timeSlot->name }}</strong><br>
+                                <small style="color: var(--muted);">{{ substr($s->timeSlot->start_time, 0, 5) }} &ndash; {{ substr($s->timeSlot->end_time, 0, 5) }}</small>
                             </td>
-                            <td style="padding: 10px 12px; border: 1px solid #e2e8f0;">
-                                <strong style="font-size: 14px; color: #1e293b;">{{ $s->subject->name }}</strong>
+                            <td>
+                                <strong style="font-size: 14px;">{{ $s->subject->name }}</strong>
                             </td>
-                            <td style="padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #334155;">
+                            <td style="font-weight: 600;">
                                 {{ $s->tutor->name }}
                             </td>
-                            <td style="padding: 10px 12px; border: 1px solid #e2e8f0;">
+                            <td>
                                 @if($s->program->code === 'reguler')
-                                    <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">Reguler</span>
+                                    <span class="badge" style="background: var(--blue-soft); color: var(--blue-text); font-weight: 700;">Reguler</span>
                                 @elseif($s->program->code === 'consult')
-                                    <span class="badge" style="background: #e0e7ff; color: #4338ca; font-weight: 700;">Konsultasi</span>
+                                    <span class="badge" style="background: var(--accent-gold-soft); color: var(--accent-gold-text); font-weight: 700;">Konsultasi</span>
                                 @elseif($s->program->code === 'private_home')
-                                    <span class="badge" style="background: #fef3c7; color: #b45309; font-weight: 700;">Privat Rumah</span>
+                                    <span class="badge" style="background: var(--accent-terra-soft); color: var(--accent-terra-text); font-weight: 700;">Privat Rumah</span>
                                 @else
-                                    <span class="badge" style="background: #ede9fe; color: #6d28d9; font-weight: 700;">Privat Bimbel</span>
+                                    <span class="badge" style="background: var(--primary-soft); color: var(--primary); font-weight: 700;">Privat Bimbel</span>
                                 @endif
-                                <div style="font-size: 11px; color: #64748b; margin-top: 3px;">
+                                <div style="font-size: 11px; color: var(--muted); margin-top: 3px;">
                                     {{ $s->room->name }}
                                 </div>
                             </td>
-                            <td style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: center;">
-                                <strong style="color: #059669; font-size: 13px;">{{ $s->remaining_seats }} kursi lagi</strong>
-                                <small style="display: block; color: #64748b;">dari kuota {{ $s->quota_max }}</small>
+                            <td style="text-align: center;">
+                                <strong style="color: var(--mint-text); font-size: 13px;">{{ $s->remaining_seats }} kursi lagi</strong>
+                                <small style="display: block; color: var(--muted);">dari kuota {{ $s->quota_max }}</small>
                             </td>
-                            <td style="padding: 10px 12px; border: 1px solid #e2e8f0; text-align: center;">
+                            <td style="text-align: center;">
                                 <form action="{{ route('student.bookings.store') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="schedule_id" value="{{ $s->id }}">
-                                    <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 13px;" {{ $weeklyBookingCount >= $maxWeekly ? 'disabled' : '' }}>
-                                        Pesan Kursi
+                                    <button type="submit" class="btn-icon btn-icon-primary" title="Pesan Kursi" aria-label="Pesan Kursi" {{ $weeklyBookingCount >= $maxWeekly ? 'disabled' : '' }} style="margin:auto;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
                                     </button>
                                 </form>
                             </td>
@@ -123,24 +122,24 @@
 {{-- MODAL BUAT JADWAL KONSULTASI --}}
 <div id="consult-modal-overlay"
      onclick="closeConsultModal(event)"
-     style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9000; align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: #fff; border-radius: 12px; width: 100%; max-width: 560px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;"
+     style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 560px; box-shadow: var(--shadow); overflow: hidden;"
          onclick="event.stopPropagation()">
 
         {{-- Header Modal --}}
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid #e5e7eb; background: #f5f3ff;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid var(--line); background: var(--surface-2);">
             <div>
-                <h2 style="font-size: 16px; font-weight: 700; color: #3730a3; margin: 0;">Buat Jadwal Konsultasi</h2>
-                <p style="font-size: 12px; color: #6366f1; margin: 3px 0 0;">Sesi 1-on-1 bersama tutor. Pembatalan berlaku minimal H-1.</p>
+                <h2 style="font-size: 16px; font-weight: 700; color: var(--text); margin: 0;">Buat Jadwal Konsultasi</h2>
+                <p style="font-size: 12px; color: var(--muted); margin: 3px 0 0;">Sesi 1-on-1 bersama tutor. Pembatalan berlaku minimal H-1.</p>
             </div>
             <button onclick="closeConsultModal()" type="button"
-                    style="background: none; border: none; font-size: 20px; color: #6b7280; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+                    style="background: none; border: none; font-size: 22px; color: var(--muted); cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
         </div>
 
         {{-- Body Modal --}}
         <div style="padding: 24px;">
             @if($weeklyBookingCount >= $maxWeekly)
-                <div style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 16px; font-size: 13px;">
+                <div class="alert alert-error" style="border-radius: 10px; font-size: 13px;">
                     <strong>Kuota mingguan sudah penuh.</strong> Anda tidak dapat membuat jadwal konsultasi baru pada minggu ini.
                 </div>
             @else
@@ -150,25 +149,22 @@
 
                         {{-- Tanggal --}}
                         <div>
-                            <label for="consult_date" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
-                                Tanggal <span style="color: #ef4444;">*</span>
+                            <label for="consult_date" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px;">
+                                Tanggal <span style="color: var(--pink-text);">*</span>
                             </label>
-                            <input type="date" id="consult_date" name="date"
+                            <input type="date" id="consult_date" name="date" class="form-control"
                                    min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
                                    value="{{ old('date') }}"
-                                   style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('date') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
                                    required>
-                            @error('date')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                            @error('date')<p style="color: var(--pink-text); font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
                         </div>
 
                         {{-- Sesi --}}
                         <div>
-                            <label for="consult_time_slot" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
-                                Sesi / Jam <span style="color: #ef4444;">*</span>
+                            <label for="consult_time_slot" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px;">
+                                Sesi / Jam <span style="color: var(--pink-text);">*</span>
                             </label>
-                            <select id="consult_time_slot" name="time_slot_id"
-                                    style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('time_slot_id') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
-                                    required>
+                            <select id="consult_time_slot" name="time_slot_id" class="form-control" required>
                                 <option value="">-- Pilih Sesi --</option>
                                 @foreach($timeSlots as $ts)
                                     <option value="{{ $ts->id }}" {{ old('time_slot_id') == $ts->id ? 'selected' : '' }}>
@@ -176,18 +172,16 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('time_slot_id')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                            @error('time_slot_id')<p style="color: var(--pink-text); font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
                         </div>
 
                         {{-- Mata Pelajaran --}}
                         <div>
-                            <label for="consult_subject" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
-                                Mata Pelajaran <span style="color: #ef4444;">*</span>
+                            <label for="consult_subject" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px;">
+                                Mata Pelajaran <span style="color: var(--pink-text);">*</span>
                             </label>
-                            <select id="consult_subject" name="subject_id"
-                                    onchange="filterTutors(this.value)"
-                                    style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('subject_id') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
-                                    required>
+                            <select id="consult_subject" name="subject_id" class="form-control"
+                                    onchange="filterTutors(this.value)" required>
                                 <option value="">-- Pilih Mata Pelajaran --</option>
                                 @foreach($subjects as $subj)
                                     <option value="{{ $subj->id }}" {{ old('subject_id') == $subj->id ? 'selected' : '' }}>
@@ -195,43 +189,41 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('subject_id')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                            @error('subject_id')<p style="color: var(--pink-text); font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
                         </div>
 
                         {{-- Pengajar --}}
                         <div>
-                            <label for="consult_tutor" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
-                                Pengajar / Tutor <span style="color: #ef4444;">*</span>
+                            <label for="consult_tutor" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px;">
+                                Pengajar / Tutor <span style="color: var(--pink-text);">*</span>
                             </label>
-                            <select id="consult_tutor" name="tutor_id"
-                                    style="width: 100%; padding: 8px 10px; border: 1.5px solid {{ $errors->has('tutor_id') ? '#ef4444' : '#d1d5db' }}; border-radius: 8px; font-size: 13px; background: #f9fafb; box-sizing: border-box;"
-                                    required>
+                            <select id="consult_tutor" name="tutor_id" class="form-control" required>
                                 <option value="">-- Pilih mata pelajaran dulu --</option>
                             </select>
-                            @error('tutor_id')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                            @error('tutor_id')<p style="color: var(--pink-text); font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
                         </div>
 
                         {{-- Catatan --}}
                         <div style="grid-column: 1 / -1;">
-                            <label for="consult_notes" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;">
+                            <label for="consult_notes" style="display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px;">
                                 Catatan / Topik
                             </label>
-                            <textarea id="consult_notes" name="notes" rows="3" maxlength="500"
+                            <textarea id="consult_notes" name="notes" rows="3" maxlength="500" class="form-control"
                                       placeholder="Topik atau materi yang ingin dikonsultasikan..."
-                                      style="width: 100%; padding: 8px 10px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 13px; background: #f9fafb; resize: vertical; box-sizing: border-box;">{{ old('notes') }}</textarea>
-                            @error('notes')<p style="color: #ef4444; font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
+                                      style="resize: vertical;">{{ old('notes') }}</textarea>
+                            @error('notes')<p style="color: var(--pink-text); font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
-                        <small style="color: #9ca3af; font-size: 11px;">Pembatalan hanya bisa dilakukan <strong>minimal H-1</strong>.</small>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px;">
+                        <small style="color: var(--muted); font-size: 11px;">Pembatalan hanya bisa dilakukan <strong>minimal H-1</strong>.</small>
                         <div style="display: flex; gap: 8px;">
                             <button type="button" onclick="closeConsultModal()"
                                     class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">
                                 Batal
                             </button>
                             <button type="submit" class="btn btn-primary"
-                                    style="background: #4f46e5; padding: 8px 20px; font-size: 13px;">
+                                    style="padding: 8px 20px; font-size: 13px;">
                                 Ajukan Konsultasi
                             </button>
                         </div>
@@ -242,13 +234,17 @@
     </div>
 </div>
 
+@php
+    $subjectTutorsData = $subjects->map(function ($s) {
+        return [
+            'id' => $s->id,
+            'tutors' => $s->tutors->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->values(),
+        ];
+    })->keyBy('id');
+@endphp
+
 <script>
-const subjectTutors = @json($subjects->map(function ($s) {
-    return [
-        'id' => $s->id,
-        'tutors' => $s->tutors->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->values(),
-    ];
-})->keyBy('id'));
+const subjectTutors = @json($subjectTutorsData);
 
 function filterTutors(subjectId) {
     const select = document.getElementById('consult_tutor');
@@ -287,23 +283,21 @@ function switchStudentTab(cat) {
     const btnSpecial = document.getElementById('btn-std-special');
 
     [btnAll, btnReguler, btnSpecial].forEach(b => {
-        b.style.background = 'transparent';
-        b.style.color = '#64748b';
+        b.classList.remove('active');
+        b.style.background = '';
+        b.style.color = '';
     });
 
     if (cat === 'all') {
-        btnAll.style.background = '#2563eb';
-        btnAll.style.color = '#ffffff';
+        btnAll.classList.add('active');
         rows.forEach(r => r.style.display = '');
     } else if (cat === 'reguler') {
-        btnReguler.style.background = '#2563eb';
-        btnReguler.style.color = '#ffffff';
+        btnReguler.classList.add('active');
         rows.forEach(r => {
             r.style.display = r.classList.contains('row-reguler') ? '' : 'none';
         });
     } else if (cat === 'special') {
-        btnSpecial.style.background = '#2563eb';
-        btnSpecial.style.color = '#ffffff';
+        btnSpecial.classList.add('active');
         rows.forEach(r => {
             r.style.display = r.classList.contains('row-special') ? '' : 'none';
         });

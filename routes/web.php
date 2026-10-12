@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ProgramController;
 use App\Http\Controllers\Admin\RoomController;
@@ -46,6 +47,11 @@ Route::middleware(['auth'])->group(function () {
 
         // Kelola Pengguna (Siswa & Tutor)
         Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
+
+        // Backup Data & Spreadsheet
+        Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+        Route::post('/backups', [BackupController::class, 'createBackup'])->name('backups.create');
+        Route::post('/backups/spreadsheet', [BackupController::class, 'updateSpreadsheet'])->name('backups.updateSpreadsheet');
     });
 
     // 2. AREA PENGAJAR / TUTOR

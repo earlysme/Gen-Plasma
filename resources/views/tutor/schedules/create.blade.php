@@ -3,6 +3,17 @@
 @section('title', 'Buka Slot Mengajar Baru')
 
 @section('content')
+<script>
+    (function() {
+        const targetUrl = new URL("{{ route('tutor.dashboard') }}", window.location.origin);
+        targetUrl.searchParams.set('open_modal', '1');
+        const currentParams = new URLSearchParams(window.location.search);
+        if (currentParams.get('date')) targetUrl.searchParams.set('date', currentParams.get('date'));
+        if (currentParams.get('time_slot_id')) targetUrl.searchParams.set('time_slot_id', currentParams.get('time_slot_id'));
+        if (currentParams.get('room_id')) targetUrl.searchParams.set('room_id', currentParams.get('room_id'));
+        window.location.replace(targetUrl.toString());
+    })();
+</script>
 <div style="max-width:680px; margin:0 auto;">
     <div class="page-header" style="display:block;">
         <a href="{{ route('tutor.dashboard') }}" style="color:var(--primary); font-weight:700; font-size:13px;">← Kembali ke Jadwal Saya</a>
