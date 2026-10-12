@@ -45,14 +45,18 @@
                             {{ $sub->schedules_count }} sesi
                         </td>
                         <td style="padding:14px 20px;text-align:right;">
-                            <div style="display:inline-flex;gap:6px;">
-                                <button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px;"
-                                    onclick="editSubject({{ json_encode($sub) }}, {{ json_encode($sub->tutors->pluck('id')) }})">Edit</button>
-                                <form action="{{ route('admin.subjects.destroy', $sub->id) }}" method="POST"
+                            <div style="display:inline-flex;gap:6px;align-items:center;justify-content:flex-end;">
+                                <button type="button" class="btn-icon btn-icon-edit" title="Edit Mata Pelajaran" aria-label="Edit Mata Pelajaran"
+                                    onclick="editSubject({{ json_encode($sub) }}, {{ json_encode($sub->tutors->pluck('id')) }})">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                </button>
+                                <form action="{{ route('admin.subjects.destroy', $sub->id) }}" method="POST" style="margin:0;"
                                     onsubmit="return confirm('Hapus mata pelajaran ini?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" style="padding:6px 10px;font-size:12px;">Hapus</button>
+                                    <button type="submit" class="btn-icon btn-icon-danger" title="Hapus Mata Pelajaran" aria-label="Hapus Mata Pelajaran">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                    </button>
                                 </form>
                             </div>
                         </td>
