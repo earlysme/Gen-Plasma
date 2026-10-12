@@ -106,6 +106,9 @@
             border: 1px solid var(--line);
             border-radius: 12px;
             padding: 4px 6px;
+        }
+
+        .jd-datepick {
             position: relative;
         }
 

@@ -19,21 +19,27 @@ use Illuminate\Support\Str;
 class BookingController extends Controller
 {
     /**
-     * Katalog Jadwal Bioskop: Siswa melihat slot jadwal aktif yang masih tersedia.
+     * Katalog Jadwal: Siswa melihat slot jadwal aktif yang masih tersedia.
      */
-    public function index()
+    public function index(Request $request)
     {
         /** @var User $student */
         $student = Auth::user();
 
-        // Ambil jadwal aktif mulai hari ini yang belum penuh
-        $schedules = Schedule::with(['subject', 'room', 'timeSlot', 'tutor', 'program'])
-            ->where('date', '>=', Carbon::today())
+        $query = Schedule::with(['subject', 'room', 'timeSlot', 'tutor', 'program'])
             ->where('status', 'scheduled')
-            ->whereColumn('booked_count', '<', 'quota_max')
-            ->orderBy('date', 'asc')
-            ->orderBy('time_slot_id', 'asc')
-            ->get();
+            ->whereColumn('booked_count', '<', 'quota_max');
+
+        if ($request->filled('date')) {
+            $filterDate = Carbon::parse($request->date);
+            $query->whereDate('date', $filterDate);
+        } else {
+            $filterDate = null;
+            $query->where('date', '>=', Carbon::today())
+                ->where('date', '<=', Carbon::today()->addDays(13));
+        }
+
+        $schedules = $query->orderBy('date', 'asc')->orderBy('time_slot_id', 'asc')->get();
 
         // Hitung total booking aktif siswa dalam minggu berjalan (Senin - Minggu)
         $startOfWeek = Carbon::now()->startOfWeek();
@@ -69,7 +75,8 @@ class BookingController extends Controller
             'weeklyBookingCount',
             'maxWeekly',
             'subjects',
-            'timeSlots'
+            'timeSlots',
+            'filterDate'
         ));
     }
 
