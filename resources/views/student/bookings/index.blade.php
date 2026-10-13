@@ -508,12 +508,12 @@
             @if($weeklyBookingCount >= $maxWeekly)
                 <div class="sb-quota-pill quota-full">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <span>Kuota Minggu Ini: <strong>{{ $weeklyBookingCount }} / {{ $maxWeekly }} Penuh</strong></span>
+                    <span>Kuota Minggu Ini ({{ $startOfWeek->isoFormat('D MMM') }} &ndash; {{ $endOfWeek->isoFormat('D MMM') }}): <strong>{{ $weeklyBookingCount }} / {{ $maxWeekly }} Penuh</strong></span>
                 </div>
             @else
                 <div class="sb-quota-pill quota-ok">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    <span>Jadwal Minggu Ini: <strong>{{ $weeklyBookingCount }} / {{ $maxWeekly }} Terbooking</strong></span>
+                    <span>Jadwal Minggu Ini ({{ $startOfWeek->isoFormat('D MMM') }} &ndash; {{ $endOfWeek->isoFormat('D MMM') }}): <strong>{{ $weeklyBookingCount }} / {{ $maxWeekly }} Terbooking</strong></span>
                 </div>
             @endif
         </div>
@@ -524,7 +524,7 @@
         <div class="alert alert-error" style="margin-bottom: 18px; display:flex; align-items:center; gap:10px;">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <div>
-                <strong>Batas Kuota Tercapai!</strong> Anda sudah memenuhi kuota maksimal {{ $maxWeekly }} jadwal pada minggu ini. Anda dapat meninjau jadwal aktif Anda di <a href="{{ route('student.bookings.my') }}" style="color: inherit; text-decoration: underline; font-weight: bold;">Jadwal Belajar Saya</a>.
+                <strong>Batas Kuota Tercapai!</strong> Anda sudah memenuhi kuota maksimal {{ $maxWeekly }} jadwal pada minggu {{ $startOfWeek->isoFormat('D MMMM') }} &ndash; {{ $endOfWeek->isoFormat('D MMMM Y') }}. Anda dapat meninjau jadwal aktif Anda di <a href="{{ route('student.bookings.my') }}" style="color: inherit; text-decoration: underline; font-weight: bold;">Jadwal Belajar Saya</a>.
             </div>
         </div>
     @endif
@@ -750,13 +750,36 @@
 
                                 {{-- Kolom 6: Aksi Pesan Kursi --}}
                                 <td style="text-align: center;">
-                                    <form action="{{ route('student.bookings.store') }}" method="POST" style="margin:0;">
-                                        @csrf
-                                        <input type="hidden" name="schedule_id" value="{{ $s->id }}">
-                                        <button type="submit" class="btn btn-primary" style="padding: 8px 14px; font-size: 12.5px; white-space: nowrap;" {{ $weeklyBookingCount >= $maxWeekly ? 'disabled' : '' }}>
-                                            Pesan Kursi
+                                    @php
+                                        $sWeekKey = $scheduleDate->copy()->startOfWeek()->toDateString();
+                                        $sWeekCount = $weeklyCountsMap[$sWeekKey] ?? 0;
+                                        $isWeekFull = $sWeekCount >= $maxWeekly;
+                                        $timeSlotKey = $scheduleDate->toDateString().'_'.$s->time_slot_id;
+                                        $hasCollision = isset($bookedTimeSlotsMap[$timeSlotKey]);
+                                        $isSameSchedule = $hasCollision && ($bookedTimeSlotsMap[$timeSlotKey] == $s->id);
+                                    @endphp
+
+                                    @if($isSameSchedule)
+                                        <span class="badge" style="background:var(--mint);color:var(--mint-text);font-weight:700;padding:6px 12px;font-size:12px;">
+                                            Terpesan
+                                        </span>
+                                    @elseif($hasCollision)
+                                        <button type="button" class="btn" style="padding: 8px 12px; font-size: 11.5px; opacity:0.6; cursor:not-allowed;" disabled title="Anda sudah memiliki jadwal lain pada sesi dan jam ini">
+                                            Bentrok Jam
                                         </button>
-                                    </form>
+                                    @elseif($isWeekFull)
+                                        <button type="button" class="btn" style="padding: 8px 12px; font-size: 11.5px; opacity:0.6; cursor:not-allowed;" disabled title="Batas kuota mingguan jadwal ini ({{ $maxWeekly }}x) sudah penuh">
+                                            Kuota Penuh
+                                        </button>
+                                    @else
+                                        <form action="{{ route('student.bookings.store') }}" method="POST" style="margin:0;">
+                                            @csrf
+                                            <input type="hidden" name="schedule_id" value="{{ $s->id }}">
+                                            <button type="submit" class="btn btn-primary" style="padding: 8px 14px; font-size: 12.5px; white-space: nowrap;">
+                                                Pesan Kursi
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -816,13 +839,36 @@
                                 <strong style="color:var(--mint-text);font-size:12.5px;">{{ $s->remaining_seats }} kursi lagi</strong>
                                 <small style="display:block;color:var(--muted);font-size:11px;">Kuota: {{ $s->quota_max }}</small>
                             </div>
-                            <form action="{{ route('student.bookings.store') }}" method="POST" style="margin:0;">
-                                @csrf
-                                <input type="hidden" name="schedule_id" value="{{ $s->id }}">
-                                <button type="submit" class="btn btn-primary" style="padding:8px 16px;font-size:12px;" {{ $weeklyBookingCount >= $maxWeekly ? 'disabled' : '' }}>
-                                    Pesan Kursi
+                            @php
+                                $sWeekKey = $scheduleDate->copy()->startOfWeek()->toDateString();
+                                $sWeekCount = $weeklyCountsMap[$sWeekKey] ?? 0;
+                                $isWeekFull = $sWeekCount >= $maxWeekly;
+                                $timeSlotKey = $scheduleDate->toDateString().'_'.$s->time_slot_id;
+                                $hasCollision = isset($bookedTimeSlotsMap[$timeSlotKey]);
+                                $isSameSchedule = $hasCollision && ($bookedTimeSlotsMap[$timeSlotKey] == $s->id);
+                            @endphp
+
+                            @if($isSameSchedule)
+                                <span class="badge" style="background:var(--mint);color:var(--mint-text);font-weight:700;padding:6px 12px;font-size:11.5px;">
+                                    Terpesan
+                                </span>
+                            @elseif($hasCollision)
+                                <button type="button" class="btn" style="padding:7px 12px;font-size:11px;opacity:0.6;cursor:not-allowed;" disabled>
+                                    Bentrok Jam
                                 </button>
-                            </form>
+                            @elseif($isWeekFull)
+                                <button type="button" class="btn" style="padding:7px 12px;font-size:11px;opacity:0.6;cursor:not-allowed;" disabled>
+                                    Kuota Penuh
+                                </button>
+                            @else
+                                <form action="{{ route('student.bookings.store') }}" method="POST" style="margin:0;">
+                                    @csrf
+                                    <input type="hidden" name="schedule_id" value="{{ $s->id }}">
+                                    <button type="submit" class="btn btn-primary" style="padding:8px 16px;font-size:12px;">
+                                        Pesan Kursi
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @endforeach

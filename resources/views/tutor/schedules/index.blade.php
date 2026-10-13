@@ -135,48 +135,100 @@
             border-color: var(--primary-soft);
         }
 
-        .jd-date-trigger {
+        /* Selector Minggu & Hari (Senin - Sabtu) */
+        .jd-week-tabs {
             display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            border-radius: 8px;
-            background: var(--surface);
+            background: var(--surface-2);
+            padding: 3px;
+            border-radius: 10px;
             border: 1px solid var(--line);
-            color: var(--text);
-            font-size: 12.5px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .15s ease;
+            gap: 2px;
         }
 
-        .jd-date-trigger svg:first-child {
+        .jd-week-tab {
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all .15s ease;
+            white-space: nowrap;
+        }
+
+        .jd-week-tab.is-active {
+            background: var(--surface);
             color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .jd-days-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .jd-day-chip {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 82px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--text);
+            text-decoration: none;
+            transition: all .15s ease;
             flex-shrink: 0;
         }
 
-        .jd-date-trigger:hover {
+        .jd-day-chip:hover {
             border-color: var(--primary);
-            color: var(--primary);
+            transform: translateY(-1px);
         }
 
-        .jd-today-btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 11px;
-            border-radius: 8px;
-            font-size: 11.5px;
-            font-weight: 700;
-            background: var(--surface);
-            color: var(--primary);
-            border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
-            text-decoration: none;
-            transition: all .15s ease;
-        }
-
-        .jd-today-btn:hover {
+        .jd-day-chip.is-selected {
             background: var(--primary);
             color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 3px 10px color-mix(in srgb, var(--primary) 25%, transparent);
+        }
+
+        .jd-day-chip.is-selected .jd-day-name,
+        .jd-day-chip.is-selected .jd-day-date {
+            color: #fff;
+        }
+
+        .jd-day-name {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            color: var(--muted);
+        }
+
+        .jd-day-date {
+            font-size: 13px;
+            font-weight: 800;
+            margin-top: 1px;
+        }
+
+        .jd-day-chip.is-today:not(.is-selected) {
+            border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+            background: var(--primary-soft);
+        }
+
+        .jd-day-chip.is-today:not(.is-selected) .jd-day-name {
+            color: var(--primary);
+        }
+
+        .jd-day-chip.is-saturday:not(.is-selected) {
+            border-style: dashed;
         }
 
         .jd-date-control input[type="date"] {
@@ -940,34 +992,16 @@
                     <span class="jd-badge-info">{{ count($allTimeSlots) }} sesi, {{ count($physicalRooms) }} ruang</span>
                 </div>
 
-                {{-- Kontrol Tanggal Minimalis & Elegan --}}
-                <div class="jd-date-control">
-                    @php
-                        $prevDate = \Carbon\Carbon::parse($checkDate)->subDay()->toDateString();
-                        $nextDate = \Carbon\Carbon::parse($checkDate)->addDay()->toDateString();
-                        $isTodaySelected = \Carbon\Carbon::parse($checkDate)->isToday();
-                    @endphp
-                    <a href="{{ route('tutor.schedules.index', ['check_date' => $prevDate]) }}" class="jd-nav-arrow" title="Hari sebelumnya">‹</a>
-                    
-                    <button type="button" id="jd-date-btn" class="jd-date-trigger" data-url="{{ route('tutor.schedules.index') }}" title="Klik untuk pilih tanggal">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                            <line x1="16" x2="16" y1="2" x2="6"/>
-                            <line x1="8" x2="8" y1="2" y2="6"/>
-                            <line x1="3" x2="21" y1="10" y2="10"/>
-                        </svg>
-                        <span>{{ \Carbon\Carbon::parse($checkDate)->isoFormat('dddd, D MMMM Y') }}</span>
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.6">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </button>
-                    <input type="date" id="jd-date" value="{{ $checkDate }}" tabindex="-1" aria-hidden="true">
-
-                    <a href="{{ route('tutor.schedules.index', ['check_date' => $nextDate]) }}" class="jd-nav-arrow" title="Hari berikutnya">›</a>
-
-                    @if (!$isTodaySelected)
-                        <a href="{{ route('tutor.schedules.index', ['check_date' => date('Y-m-d')]) }}" class="jd-today-btn" title="Kembali ke hari ini">Hari ini</a>
-                    @endif
+                {{-- Kontrol Navigasi Minggu (Minggu Ini & Minggu Depan) --}}
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div class="jd-week-tabs">
+                        @foreach ($weeksList as $w)
+                            <a href="{{ route('tutor.schedules.index', ['check_date' => $w['start_date']]) }}"
+                               class="jd-week-tab {{ $w['is_active'] ? 'is-active' : '' }}">
+                                {{ $w['label'] }}
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
 
                 {{-- Legenda Status --}}
@@ -982,6 +1016,18 @@
                         <span class="badge-level badge-level-sma" style="margin-bottom:0;">SMA</span>
                     </span>
                 </div>
+            </div>
+
+            {{-- Baris Pemilih Hari: Senin s/d Sabtu (Minggu Libur) --}}
+            <div class="jd-days-bar">
+                @foreach ($weekDays as $day)
+                    <a href="{{ route('tutor.schedules.index', ['check_date' => $day['date']]) }}"
+                       class="jd-day-chip {{ $day['is_selected'] ? 'is-selected' : '' }} {{ $day['is_today'] ? 'is-today' : '' }} {{ $day['is_saturday'] ? 'is-saturday' : '' }}"
+                       title="{{ $day['day_name'] }}, {{ $day['day_num'] }} {{ $day['is_saturday'] ? '(Sesi Pagi Tersedia)' : '' }}">
+                        <span class="jd-day-name">{{ $day['day_name'] }}</span>
+                        <span class="jd-day-date">{{ $day['day_num'] }}</span>
+                    </a>
+                @endforeach
             </div>
 
             <div class="jd-scroll">
@@ -1502,19 +1548,6 @@
                 quotaInput.placeholder = 'Kapasitas default: ' + cap + ' orang';
             }
         });
-
-        // Pilih tanggal dari button
-        (function() {
-            const btn = document.getElementById('jd-date-btn');
-            const input = document.getElementById('jd-date');
-            if (!btn || !input) return;
-            btn.addEventListener('click', () => (input.showPicker ? input.showPicker() : input.click()));
-            input.addEventListener('change', () => {
-                if (input.value) {
-                    window.location.href = btn.dataset.url + '?check_date=' + encodeURIComponent(input.value);
-                }
-            });
-        })();
 
         // Handler tombol dialog generik
         document.querySelectorAll('[data-open]').forEach(btn => {

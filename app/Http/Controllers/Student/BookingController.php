@@ -26,24 +26,34 @@ class BookingController extends Controller
         /** @var User $student */
         $student = Auth::user();
 
-        $query = Schedule::with(['subject', 'room', 'timeSlot', 'tutor', 'program'])
+        $query = Schedule::with(['subject', 'room', 'timeSlot', 'tutor', 'program', 'educationLevel'])
             ->where('status', 'scheduled')
             ->whereColumn('booked_count', '<', 'quota_max');
+
+        // PROBLEM 1 FIX: Filter sesuai jenjang pendidikan siswa (atau jadwal umum tanpa jenjang)
+        if ($student->education_level_id) {
+            $query->where(function ($q) use ($student) {
+                $q->where('education_level_id', $student->education_level_id)
+                    ->orWhereNull('education_level_id');
+            });
+        }
 
         if ($request->filled('date')) {
             $filterDate = Carbon::parse($request->date);
             $query->whereDate('date', $filterDate);
+            $targetWeekDate = $filterDate;
         } else {
             $filterDate = null;
             $query->where('date', '>=', Carbon::today())
                 ->where('date', '<=', Carbon::today()->addDays(13));
+            $targetWeekDate = Carbon::today();
         }
 
         $schedules = $query->orderBy('date', 'asc')->orderBy('time_slot_id', 'asc')->get();
 
-        // Hitung total booking aktif siswa dalam minggu berjalan (Senin - Minggu)
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
+        // PROBLEM 3 FIX: Hitung kuota booking aktif siswa dinamis sesuai minggu dari tanggal yang dipilih/dilihat
+        $startOfWeek = $targetWeekDate->copy()->startOfWeek();
+        $endOfWeek = $targetWeekDate->copy()->endOfWeek();
 
         $weeklyBookingCount = Booking::where('student_id', $student->id)
             ->where('status', 'confirmed')
@@ -52,6 +62,36 @@ class BookingController extends Controller
                     ->where('status', '!=', 'cancelled');
             })
             ->count();
+
+        // Hitung kuota per minggu untuk semua jadwal yang tampil agar tombol disabled akurat per kartu/baris
+        $weeksInView = $schedules->pluck('date')->map(fn ($d) => Carbon::parse($d)->startOfWeek()->toDateString())->unique();
+        $weeklyCountsMap = [];
+        foreach ($weeksInView as $wStartStr) {
+            $wStart = Carbon::parse($wStartStr);
+            $wEnd = $wStart->copy()->endOfWeek();
+            $weeklyCountsMap[$wStartStr] = Booking::where('student_id', $student->id)
+                ->where('status', 'confirmed')
+                ->whereHas('schedule', function ($q) use ($wStart, $wEnd) {
+                    $q->whereBetween('date', [$wStart, $wEnd])
+                        ->where('status', '!=', 'cancelled');
+                })
+                ->count();
+        }
+
+        // Ambil ID jadwal dan sesi slot yang sudah dibooking siswa untuk anti-bentrok waktu di frontend
+        $bookedTimeSlotsMap = Booking::where('student_id', $student->id)
+            ->where('status', 'confirmed')
+            ->whereHas('schedule', function ($q) {
+                $q->where('date', '>=', Carbon::today())
+                    ->where('status', '!=', 'cancelled');
+            })
+            ->with('schedule')
+            ->get()
+            ->mapWithKeys(function ($b) {
+                $dateKey = Carbon::parse($b->schedule->date)->toDateString();
+                return [$dateKey.'_'.$b->schedule->time_slot_id => $b->schedule_id];
+            })
+            ->toArray();
 
         // Pisahkan jadwal Reguler vs Privat & Konsultasi
         $regularSchedules = $schedules->filter(function ($s) {
@@ -73,10 +113,14 @@ class BookingController extends Controller
             'regularSchedules',
             'specialSchedules',
             'weeklyBookingCount',
+            'weeklyCountsMap',
+            'bookedTimeSlotsMap',
             'maxWeekly',
             'subjects',
             'timeSlots',
-            'filterDate'
+            'filterDate',
+            'startOfWeek',
+            'endOfWeek'
         ));
     }
 
@@ -91,10 +135,17 @@ class BookingController extends Controller
 
         /** @var User $student */
         $student = Auth::user();
-        $schedule = Schedule::findOrFail($request->schedule_id);
+        $schedule = Schedule::with(['timeSlot', 'educationLevel'])->findOrFail($request->schedule_id);
 
         if ($schedule->status !== 'scheduled' || Carbon::parse($schedule->date)->isPast()) {
             return back()->with('error', 'Jadwal ini sudah tidak tersedia untuk dibooking.');
+        }
+
+        // PROBLEM 1 FIX: Validasi kecocokan jenjang pendidikan
+        if ($student->education_level_id && $schedule->education_level_id) {
+            if ((int) $student->education_level_id !== (int) $schedule->education_level_id) {
+                return back()->with('error', 'Anda tidak dapat memesan jadwal ini karena jenjang kelas tidak sesuai dengan jenjang pendidikan Anda.');
+            }
         }
 
         // 1. CEK KAPASITAS PENUH:
@@ -102,7 +153,7 @@ class BookingController extends Controller
             return back()->with('error', 'Maaf, kuota kursi pada slot jadwal ini sudah penuh!');
         }
 
-        // 2. CEK DOUBLE BOOKING (Siswa sudah booking slot yang sama):
+        // 2. CEK DOUBLE BOOKING (Siswa sudah booking slot yang sama persis):
         $alreadyBooked = $schedule->bookings()
             ->where('student_id', $student->id)
             ->where('status', 'confirmed')
@@ -112,7 +163,21 @@ class BookingController extends Controller
             return back()->with('error', 'Anda sudah memesan kursi pada jadwal ini.');
         }
 
-        // 3. VALIDASI KUOTA MINGGUAN (Maksimal 2x Jadwal per Minggu):
+        // PROBLEM 2 FIX: Validasi bentrok waktu (Siswa sudah memiliki jadwal lain di tanggal & sesi jam yang sama)
+        $timeCollision = Booking::where('student_id', $student->id)
+            ->where('status', 'confirmed')
+            ->whereHas('schedule', function ($q) use ($schedule) {
+                $q->whereDate('date', $schedule->date)
+                    ->where('time_slot_id', $schedule->time_slot_id)
+                    ->where('status', '!=', 'cancelled');
+            })
+            ->exists();
+
+        if ($timeCollision) {
+            return back()->with('error', 'Bentrok waktu! Anda sudah memiliki jadwal bimbingan lain pada tanggal dan sesi jam yang sama.');
+        }
+
+        // 3. VALIDASI KUOTA MINGGUAN (Maksimal 2x Jadwal per Minggu pada minggu jadwal tersebut):
         $scheduleDate = Carbon::parse($schedule->date);
         $startOfWeek = $scheduleDate->copy()->startOfWeek();
         $endOfWeek = $scheduleDate->copy()->endOfWeek();
@@ -128,7 +193,7 @@ class BookingController extends Controller
         $maxWeekly = $student->weekly_frequency ?? 2;
 
         if ($weeklyBookingCount >= $maxWeekly) {
-            return back()->with('error', "Batas kuota tercapai! Anda sudah mengambil {$weeklyBookingCount} dari batas maksimal {$maxWeekly} jadwal pada minggu tersebut.");
+            return back()->with('error', "Batas kuota tercapai! Anda sudah mengambil {$weeklyBookingCount} dari batas maksimal {$maxWeekly} jadwal pada minggu tersebut ({$startOfWeek->isoFormat('D MMM')} - {$endOfWeek->isoFormat('D MMM Y')}).");
         }
 
         // 4. BUAT BOOKING KURSI:

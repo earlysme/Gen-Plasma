@@ -41,10 +41,45 @@ class ScheduleController extends Controller
             return $s->program && in_array($s->program->code, ['private_bimbel', 'private_home', 'consult']);
         });
 
-        // Tanggal yang diperiksa (default: hari ini)
-        $checkDate = $request->get('check_date', Carbon::today()->toDateString());
+        // Tanggal yang diperiksa (default: hari ini, atau jika hari Minggu/libur diarahkan ke Senin minggu depan)
+        $today = Carbon::today();
+        $defaultDate = $today->isSunday() ? $today->copy()->addDay()->toDateString() : $today->toDateString();
+        $checkDate = $request->get('check_date', $defaultDate);
+        $parsedCheckDate = Carbon::parse($checkDate);
 
-        // Sesi aktif sesuai hari (Sesi 7-10 khusus Sabtu)
+        // Minggu dari tanggal yang sedang diperiksa (Senin s/d Sabtu, Minggu libur)
+        $currentWeekStart = $parsedCheckDate->copy()->startOfWeek(); // Senin
+        $weekDays = [];
+        for ($i = 0; $i < 6; $i++) { // 6 hari: Senin s/d Sabtu
+            $d = $currentWeekStart->copy()->addDays($i);
+            $weekDays[] = [
+                'date' => $d->toDateString(),
+                'day_name' => $d->isoFormat('dddd'),
+                'day_short' => strtoupper($d->isoFormat('ddd')),
+                'day_num' => $d->isoFormat('D MMM'),
+                'is_selected' => $d->isSameDay($parsedCheckDate),
+                'is_today' => $d->isToday(),
+                'is_saturday' => $d->isSaturday(),
+            ];
+        }
+
+        // Navigasi Minggu (Minggu Ini & Minggu Depan)
+        $thisWeekMonday = $today->copy()->startOfWeek();
+        $nextWeekMonday = $thisWeekMonday->copy()->addWeek();
+        $weeksList = [
+            [
+                'label' => 'Minggu Ini (' . $thisWeekMonday->isoFormat('D MMM') . ' - ' . $thisWeekMonday->copy()->addDays(5)->isoFormat('D MMM Y') . ')',
+                'start_date' => $thisWeekMonday->toDateString(),
+                'is_active' => $currentWeekStart->isSameDay($thisWeekMonday),
+            ],
+            [
+                'label' => 'Minggu Depan (' . $nextWeekMonday->isoFormat('D MMM') . ' - ' . $nextWeekMonday->copy()->addDays(5)->isoFormat('D MMM Y') . ')',
+                'start_date' => $nextWeekMonday->toDateString(),
+                'is_active' => $currentWeekStart->isSameDay($nextWeekMonday),
+            ],
+        ];
+
+        // Sesi aktif sesuai hari (Sesi 7-9 khusus Sabtu)
         $allTimeSlots = TimeSlot::forDate($checkDate);
 
         // 1. GRID 1: RUANGAN FISIK BIMBEL (R1 - R8) KHUSUS KELAS REGULER / BIMBEL
@@ -91,19 +126,6 @@ class ScheduleController extends Controller
             'others' => $otherSlots,
         ];
 
-        // 5 Hari horizontal selector di sekitar $checkDate
-        $parsedCheckDate = Carbon::parse($checkDate);
-        $dateList = [];
-        for ($i = -2; $i <= 2; $i++) {
-            $dt = $parsedCheckDate->copy()->addDays($i);
-            $dateList[] = [
-                'date' => $dt->toDateString(),
-                'day_short' => strtoupper($dt->isoFormat('ddd')),
-                'day_num' => $dt->format('d'),
-                'is_selected' => $dt->toDateString() === $checkDate,
-            ];
-        }
-
         // 2. GRID 2: JADWAL PRIVAT & KONSULTASI (REQUEST / DITENTUKAN OLEH MURID)
         // Menampilkan sesi privat (bimbel/rumah) dan konsultasi pada tanggal tersebut
         $dayPrivateConsultSchedules = Schedule::with(['tutor', 'subject', 'room', 'timeSlot', 'program', 'activeBookings.student', 'educationLevel'])
@@ -125,7 +147,8 @@ class ScheduleController extends Controller
             'physicalGrid',
             'dayPrivateConsultSchedules',
             'stats',
-            'dateList'
+            'weekDays',
+            'weeksList'
         ));
     }
 
