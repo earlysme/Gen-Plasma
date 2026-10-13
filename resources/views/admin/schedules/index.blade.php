@@ -2,67 +2,353 @@
 
 @section('title', 'Kelola Jadwal')
 
+@push('styles')
+<style>
+    /* Styling Rework Kelola Jadwal Operasional */
+    .schedule-toolbar-card {
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+    }
+
+    .filter-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .filter-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+    }
+
+    .filter-control {
+        padding: 8px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+        transition: all .15s ease;
+    }
+
+    .filter-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+    }
+
+    .btn-filter-reset {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all .15s ease;
+    }
+
+    .btn-filter-reset:hover {
+        background: var(--surface-2);
+        color: var(--text);
+        border-color: var(--line);
+    }
+
+    .schedule-table-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .table-info-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .table-date-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13.5px;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .table-count-badge {
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 99px;
+        background: var(--surface-2);
+        color: var(--muted);
+        border: 1px solid var(--line);
+    }
+
+    .sched-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .sched-table thead tr {
+        background: color-mix(in srgb, var(--surface) 94%, var(--text) 6%);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .sched-table th {
+        padding: 12px 18px;
+        font-size: 11.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        white-space: nowrap;
+    }
+
+    .sched-table tbody tr {
+        border-bottom: 1px solid var(--line);
+        transition: background .15s ease;
+    }
+
+    .sched-table tbody tr:hover {
+        background: color-mix(in srgb, var(--surface) 96%, var(--primary) 4%);
+    }
+
+    .sched-table td {
+        padding: 14px 18px;
+        vertical-align: middle;
+    }
+
+    /* Avatar Tutor Mini */
+    .tutor-avatar-mini {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* Program Chip */
+    .chip-program {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
+        color: var(--primary);
+        border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    /* Kursi Pill */
+    .pill-seat {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 99px;
+        font-size: 11.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .pill-seat-available {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .pill-seat-medium {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .pill-seat-full {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    /* Status Pill */
+    .pill-status {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .pill-status-scheduled {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .pill-status-completed {
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .pill-status-cancelled {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
+    /* Action Button */
+    .btn-table-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+        transition: all .15s ease;
+    }
+
+    .btn-table-detail:hover {
+        background: var(--primary);
+        color: var(--primary-contrast);
+        border-color: var(--primary);
+        box-shadow: 0 3px 8px color-mix(in srgb, var(--primary) 25%, transparent);
+    }
+
+    /* Dark Mode Adjustments */
+    html[data-theme="dark"] .pill-seat-available {
+        background: rgba(16, 185, 129, 0.15);
+        color: #6ee7b7;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    html[data-theme="dark"] .pill-seat-medium {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fcd34d;
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    html[data-theme="dark"] .pill-seat-full {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    html[data-theme="dark"] .pill-status-scheduled {
+        background: rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    html[data-theme="dark"] .pill-status-completed {
+        background: rgba(148, 163, 184, 0.15);
+        color: #cbd5e1;
+        border-color: rgba(148, 163, 184, 0.3);
+    }
+
+    html[data-theme="dark"] .pill-status-cancelled {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+</style>
+@endpush
+
 @section('content')
-    <div class="page-header">
+    <div class="page-header" style="flex-wrap: wrap; gap: 16px;">
         <div>
             <h1>Kelola Jadwal Operasional</h1>
             <p>Daftar jadwal bimbingan belajar. Klik 'Lihat Detail' untuk melihat siswa terdaftar dan aksi jadwal.</p>
         </div>
-        <button type="button" class="btn btn-primary" onclick="document.getElementById('dlg-create-sched').showModal()">+ Buka
-            slot baru</button>
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('dlg-create-sched').showModal()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Buka Slot Baru
+        </button>
     </div>
 
-    {{-- Filter Toolbar --}}
-    <div class="card" style="padding:14px 18px;margin-bottom:18px;">
+    {{-- Filter Toolbar Rework --}}
+    <div class="schedule-toolbar-card">
         <form method="GET" action="{{ route('admin.schedules.index') }}"
-            style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
-            <div style="flex:1;min-width:130px;">
-                <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Tanggal (1
-                    hari)</label>
-                <input type="date" name="date" value="{{ request('date') }}" class="form-control"
-                    style="padding:7px 10px;font-size:13px;">
+            style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+            
+            <div class="filter-field" style="flex:1;min-width:140px;">
+                <label class="filter-label">Tanggal (1 Hari)</label>
+                <input type="date" name="date" value="{{ request('date') }}" class="filter-control">
             </div>
 
-            <div style="flex:1;min-width:140px;">
-                <label
-                    style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Pengajar</label>
-                <select name="tutor_id" class="form-control" style="padding:7px 10px;font-size:13px;">
+            <div class="filter-field" style="flex:1;min-width:140px;">
+                <label class="filter-label">Pengajar</label>
+                <select name="tutor_id" class="filter-control">
                     <option value="">Semua Pengajar</option>
                     @foreach ($tutors as $tut)
                         <option value="{{ $tut->id }}" {{ request('tutor_id') == $tut->id ? 'selected' : '' }}>
-                            {{ $tut->name }}</option>
+                            {{ $tut->name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
 
-            <div style="flex:1;min-width:120px;">
-                <label
-                    style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Ruangan</label>
-                <select name="room_id" class="form-control" style="padding:7px 10px;font-size:13px;">
+            <div class="filter-field" style="flex:1;min-width:130px;">
+                <label class="filter-label">Ruangan</label>
+                <select name="room_id" class="filter-control">
                     <option value="">Semua Ruang</option>
                     @foreach ($rooms as $rm)
                         <option value="{{ $rm->id }}" {{ request('room_id') == $rm->id ? 'selected' : '' }}>
-                            {{ $rm->name }}</option>
+                            {{ $rm->name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
 
-            <div style="flex:1;min-width:120px;">
-                <label
-                    style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Program</label>
-                <select name="program_id" class="form-control" style="padding:7px 10px;font-size:13px;">
+            <div class="filter-field" style="flex:1;min-width:130px;">
+                <label class="filter-label">Program</label>
+                <select name="program_id" class="filter-control">
                     <option value="">Semua Program</option>
                     @foreach ($programs as $pr)
                         <option value="{{ $pr->id }}" {{ request('program_id') == $pr->id ? 'selected' : '' }}>
-                            {{ $pr->name }}</option>
+                            {{ $pr->name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
 
-            <div style="flex:1;min-width:110px;">
-                <label
-                    style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Status</label>
-                <select name="status" class="form-control" style="padding:7px 10px;font-size:13px;">
+            <div class="filter-field" style="flex:1;min-width:110px;">
+                <label class="filter-label">Status</label>
+                <select name="status" class="filter-control">
                     <option value="">Semua</option>
                     <option value="scheduled" {{ request('status') === 'scheduled' ? 'selected' : '' }}>Aktif</option>
                     <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Selesai</option>
@@ -70,47 +356,67 @@
                 </select>
             </div>
 
-            <div style="display:flex;gap:6px;">
-                <button type="submit" class="btn btn-primary" style="padding:7px 14px;font-size:13px;">Filter</button>
-                <a href="{{ route('admin.schedules.index') }}" class="btn btn-secondary"
-                    style="padding:7px 12px;font-size:13px;">Reset</a>
+            <div style="display:flex;gap:8px;">
+                <button type="submit" class="btn btn-primary" style="padding:8px 16px;">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    Filter
+                </button>
+                <a href="{{ route('admin.schedules.index') }}" class="btn-filter-reset">
+                    Reset
+                </a>
             </div>
         </form>
     </div>
 
-    {{-- TABEL DAFTAR JADWAL (Pas Layar) --}}
-    <div class="card" style="padding:0;overflow:hidden;border:1px solid var(--line);">
-        <div
-            style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--surface-2);">
-            <div style="font-size:13px;font-weight:700;color:var(--text);">
-                Menampilkan Jadwal: <span style="color:var(--primary);">{{ $startDate->isoFormat('D MMM Y') }}</span>
+    {{-- TABEL DAFTAR JADWAL REWORK --}}
+    <div class="schedule-table-card">
+        <div class="table-info-banner">
+            <div class="table-date-badge">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Menampilkan Jadwal:</span>
+                <span style="color:var(--primary);">{{ $startDate->isoFormat('D MMM Y') }}</span>
                 @if (!$startDate->isSameDay($endDate))
-                    – <span style="color:var(--primary);">{{ $endDate->isoFormat('D MMM Y') }}</span>
+                    <span>&ndash;</span>
+                    <span style="color:var(--primary);">{{ $endDate->isoFormat('D MMM Y') }}</span>
                 @endif
             </div>
-            <div style="font-size:12px;color:var(--muted);">
-                Total: <strong>{{ $allSchedules->count() }}</strong> slot jadwal
+            <div class="table-count-badge">
+                Total: <strong style="color:var(--text);">{{ $allSchedules->count() }}</strong> slot jadwal
             </div>
         </div>
 
         @if ($allSchedules->isEmpty())
-            <div style="text-align:center;padding:48px 20px;color:var(--muted);">
-                <p style="font-size:15px;font-weight:600;margin-bottom:6px;">Tidak ada jadwal bimbingan pada filter ini.</p>
-                <p style="font-size:13px;">Silakan sesuaikan tanggal/filter di atas atau klik tombol <strong>+ Buka slot
-                        baru</strong>.</p>
+            <div style="text-align:center;padding:56px 20px;color:var(--muted);">
+                <div style="width:48px;height:48px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--muted);">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <p style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Tidak ada jadwal bimbingan pada filter ini.</p>
+                <p style="font-size:13px;max-width:380px;margin:0 auto;">Silakan sesuaikan filter tanggal di atas atau buka slot bimbingan baru.</p>
             </div>
         @else
             <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <table class="sched-table">
                     <thead>
-                        <tr style="background:var(--surface-2);border-bottom:1px solid var(--line);text-align:left;">
-                            <th style="padding:12px 16px;color:var(--muted);font-weight:700;">Waktu &amp; Tanggal</th>
-                            <th style="padding:12px 16px;color:var(--muted);font-weight:700;">Mata Pelajaran</th>
-                            <th style="padding:12px 16px;color:var(--muted);font-weight:700;">Pengajar</th>
-                            <th style="padding:12px 16px;color:var(--muted);font-weight:700;">Program &amp; Ruangan</th>
-                            <th style="padding:12px 16px;color:var(--muted);font-weight:700;text-align:center;">Kursi</th>
-                            <th style="padding:12px 16px;color:var(--muted);font-weight:700;text-align:center;">Status</th>
-                            <th style="padding:12px 16px;color:var(--muted);font-weight:700;text-align:center;">Aksi</th>
+                        <tr>
+                            <th>Waktu &amp; Tanggal</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Pengajar</th>
+                            <th>Program &amp; Ruangan</th>
+                            <th style="text-align:center;">Kursi</th>
+                            <th style="text-align:center;">Status</th>
+                            <th style="text-align:center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -120,69 +426,69 @@
                                 $pct = $s->quota_max > 0 ? $s->booked_count / $s->quota_max : 0;
                                 $isCompleted = $s->status === 'completed';
                                 $isCancelled = $s->status === 'cancelled';
+                                
+                                // Inisial Tutor
+                                $words = explode(' ', trim($s->tutor->name));
+                                $tutorInit = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
                             @endphp
-                            <tr style="border-bottom:1px solid var(--line);transition:background .15s;"
-                                onmouseenter="this.style.background='var(--surface-2)'"
-                                onmouseleave="this.style.background='transparent'">
-                                <td style="padding:12px 16px;">
-                                    <div style="font-weight:700;color:var(--text);">
+                            <tr>
+                                <td>
+                                    <div style="font-weight:700;color:var(--text);font-size:13.5px;">
                                         {{ \Carbon\Carbon::parse($s->date)->isoFormat('dddd, D MMM Y') }}
                                     </div>
                                     <div style="font-size:12px;color:var(--muted);margin-top:2px;">
-                                        <strong>{{ $s->timeSlot->name }}</strong>
-                                        ({{ substr($s->timeSlot->start_time, 0, 5) }} &ndash;
-                                        {{ substr($s->timeSlot->end_time, 0, 5) }})
+                                        <strong style="color:var(--text);">{{ $s->timeSlot->name }}</strong>
+                                        <span>({{ substr($s->timeSlot->start_time, 0, 5) }} &ndash; {{ substr($s->timeSlot->end_time, 0, 5) }})</span>
                                     </div>
                                 </td>
-                                <td style="padding:12px 16px;">
-                                    <div style="font-weight:700;color:var(--text);font-size:14px;">{{ $s->subject->name }}
+                                <td>
+                                    <div style="font-weight:800;color:var(--text);font-size:14px;">
+                                        {{ $s->subject->name }}
                                     </div>
-                                    <div style="font-size:11px;color:var(--muted);">
-                                        {{ $s->educationLevel->name ?? 'Semua Jenjang' }}</div>
+                                    <div style="font-size:11.5px;color:var(--muted);margin-top:1px;">
+                                        {{ $s->educationLevel->name ?? 'Semua Jenjang' }}
+                                    </div>
                                 </td>
-                                <td style="padding:12px 16px;font-weight:600;color:var(--text);">
-                                    {{ $s->tutor->name }}
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="tutor-avatar-mini">{{ $tutorInit }}</span>
+                                        <span style="font-weight:700;color:var(--text);">{{ $s->tutor->name }}</span>
+                                    </div>
                                 </td>
-                                <td style="padding:12px 16px;">
-                                    <span class="badge"
-                                        style="background:#e0e7ff;color:#4338ca;font-weight:700;font-size:11px;">
+                                <td>
+                                    <span class="chip-program">
                                         {{ $s->program->name }}
                                     </span>
-                                    <div style="font-size:11px;color:var(--muted);margin-top:3px;">
+                                    <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">
                                         {{ $s->room->name }}
                                     </div>
                                 </td>
-                                <td style="padding:12px 16px;text-align:center;">
+                                <td style="text-align:center;">
                                     @if ($isFull)
-                                        <span class="badge" style="background:#fee2e2;color:#991b1b;font-weight:700;">
+                                        <span class="pill-seat pill-seat-full">
                                             {{ $s->booked_count }} / {{ $s->quota_max }} Penuh
                                         </span>
                                     @elseif($pct >= 0.7)
-                                        <span class="badge" style="background:#fef9c3;color:#854d0e;font-weight:700;">
+                                        <span class="pill-seat pill-seat-medium">
                                             {{ $s->booked_count }} / {{ $s->quota_max }} Kursi
                                         </span>
                                     @else
-                                        <span class="badge" style="background:#dcfce7;color:#166534;font-weight:700;">
+                                        <span class="pill-seat pill-seat-available">
                                             {{ $s->booked_count }} / {{ $s->quota_max }} Kursi
                                         </span>
                                     @endif
                                 </td>
-                                <td style="padding:12px 16px;text-align:center;">
+                                <td style="text-align:center;">
                                     @if ($s->status === 'scheduled')
-                                        <span class="badge"
-                                            style="background:#dbeafe;color:#1e40af;font-weight:700;">Aktif</span>
+                                        <span class="pill-status pill-status-scheduled">Aktif</span>
                                     @elseif($s->status === 'completed')
-                                        <span class="badge"
-                                            style="background:#dcfce7;color:#166534;font-weight:700;">Selesai</span>
+                                        <span class="pill-status pill-status-completed">Selesai</span>
                                     @else
-                                        <span class="badge"
-                                            style="background:#fee2e2;color:#991b1b;font-weight:700;">Batal</span>
+                                        <span class="pill-status pill-status-cancelled">Batal</span>
                                     @endif
                                 </td>
-                                <td style="padding:12px 16px;text-align:center;">
-                                    <button type="button" class="btn btn-secondary"
-                                        style="padding:6px 14px;font-size:12px;font-weight:600;"
-                                        onclick="openDetail({{ $s->id }})">
+                                <td style="text-align:center;">
+                                    <button type="button" class="btn-table-detail" onclick="openDetail({{ $s->id }})">
                                         Lihat Detail
                                     </button>
                                 </td>
@@ -194,14 +500,13 @@
         @endif
     </div>
 
-    {{-- MODAL DETAIL JADWAL (Pop-up di Tengah Layar) --}}
+    {{-- MODAL DETAIL JADWAL --}}
     <dialog id="dlg-detail-schedule" class="card"
         style="width:min(92vw,520px);padding:24px;border-radius:18px;margin:auto;box-shadow:0 20px 40px rgba(0,0,0,0.25);">
         <div
             style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:14px;">
             <div>
-                <h3 id="modal-sched-subject" style="font:800 20px 'Plus Jakarta Sans';margin:0;color:var(--text);">Detail
-                    Jadwal</h3>
+                <h3 id="modal-sched-subject" style="font:800 20px 'Plus Jakarta Sans';margin:0;color:var(--text);">Detail Jadwal</h3>
                 <p id="modal-sched-level" style="font-size:12px;color:var(--muted);margin:3px 0 0;"></p>
             </div>
             <button onclick="closeDetail()" type="button"
@@ -257,14 +562,14 @@
             document.getElementById('modal-sched-level').textContent = s.level + ' • ' + s.program;
 
             const statusLabel = s.status === 'scheduled' ?
-                '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Aktif</span>' :
+                '<span class="pill-status pill-status-scheduled">Aktif</span>' :
                 s.status === 'completed' ?
-                '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Selesai</span>' :
-                '<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Batal</span>';
+                '<span class="pill-status pill-status-completed">Selesai</span>' :
+                '<span class="pill-status pill-status-cancelled">Batal</span>';
 
             const studentList = s.students.length ?
                 s.students.map((n, i) =>
-                    `<li style="font-size:13px;padding:6px 8px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;"><span style="color:var(--muted);font-weight:700;font-size:11px;">${i+1}.</span> <strong style="color:var(--text);">${n}</strong></li>`
+                    `<li style="font-size:13px;padding:8px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;"><span style="color:var(--muted);font-weight:700;font-size:11px;">${i+1}.</span> <strong style="color:var(--text);">${n}</strong></li>`
                     ).join('') :
                 '<li style="font-size:13px;color:var(--muted);padding:8px 0;">Belum ada murid terdaftar pada slot ini.</li>';
 
@@ -291,16 +596,16 @@
 
             document.getElementById('detail-content').innerHTML = `
         <table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:16px;">
-            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 0;color:var(--muted);width:100px;">Pengajar</td><td style="padding:6px 0;font-weight:700;color:var(--text);">${s.tutor}</td></tr>
-            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 0;color:var(--muted);">Hari &amp; Tanggal</td><td style="padding:6px 0;color:var(--text);">${s.date}</td></tr>
-            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 0;color:var(--muted);">Sesi Waktu</td><td style="padding:6px 0;font-weight:600;color:var(--text);">${s.slot}</td></tr>
-            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 0;color:var(--muted);">Ruangan</td><td style="padding:6px 0;color:var(--text);">${s.room}</td></tr>
-            <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 0;color:var(--muted);">Kapasitas</td><td style="padding:6px 0;font-weight:700;color:var(--text);">${s.booked} dari ${s.quota} kursi ${s.is_full ? '<span style="color:#ef4444;">(Penuh)</span>':''}</td></tr>
-            <tr><td style="padding:6px 0;color:var(--muted);">Status</td><td style="padding:6px 0;">${statusLabel}</td></tr>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;color:var(--muted);width:110px;">Pengajar</td><td style="padding:8px 0;font-weight:700;color:var(--text);">${s.tutor}</td></tr>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;color:var(--muted);">Hari &amp; Tanggal</td><td style="padding:8px 0;color:var(--text);">${s.date}</td></tr>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;color:var(--muted);">Sesi Waktu</td><td style="padding:8px 0;font-weight:600;color:var(--text);">${s.slot}</td></tr>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;color:var(--muted);">Ruangan</td><td style="padding:8px 0;color:var(--text);">${s.room}</td></tr>
+            <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;color:var(--muted);">Kapasitas</td><td style="padding:8px 0;font-weight:700;color:var(--text);">${s.booked} dari ${s.quota} kursi ${s.is_full ? '<span style="color:#ef4444;">(Penuh)</span>':''}</td></tr>
+            <tr><td style="padding:8px 0;color:var(--muted);">Status</td><td style="padding:8px 0;">${statusLabel}</td></tr>
         </table>
         
-        <div style="background:var(--surface-2);padding:12px;border-radius:10px;margin-bottom:16px;">
-            <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">
+        <div style="background:var(--surface-2);padding:12px;border-radius:10px;margin-bottom:16px;border:1px solid var(--line);">
+            <div style="font-size:11.5px;font-weight:800;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">
                 Murid Terdaftar (${s.students.length})
             </div>
             <ul style="list-style:none;padding:0;margin:0;">${studentList}</ul>
@@ -332,12 +637,6 @@
             document.getElementById('dlg-status').showModal();
         }
 
-        // Hover effect pada sel jadwal
-        document.querySelectorAll('.sched-card').forEach(el => {
-            el.addEventListener('mouseenter', () => el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)');
-            el.addEventListener('mouseleave', () => el.style.boxShadow = '');
-        });
-
         // Auto adjust quota input when room / program changes
         document.getElementById('sched-room')?.addEventListener('change', function() {
             const opt = this.options[this.selectedIndex];
@@ -351,12 +650,6 @@
             }
         });
     </script>
-
-    <style>
-        .sched-card:hover {
-            transform: translateY(-1px);
-        }
-    </style>
 
     {{-- Dialog Buka Slot Jadwal Baru --}}
     <dialog id="dlg-create-sched" class="card"
