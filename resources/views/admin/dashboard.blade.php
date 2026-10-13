@@ -601,7 +601,7 @@
                 <tbody>
                     @foreach($recentSchedules as $rs)
                         <tr>
-                            <td style="color: var(--text);">{{ \Carbon\Carbon::parse($rs->date)->format('d M Y') }}</td>
+                            <td style="color: var(--text);">{{ \Carbon\Carbon::parse($rs->date)->isoFormat('D MMM Y') }}</td>
                             <td style="color: var(--muted);">{{ $rs->timeSlot->name }}</td>
                             <td><strong style="color: var(--text);">{{ $rs->subject->name }}</strong></td>
                             <td style="color: var(--text);">{{ $rs->tutor->name }}</td>
