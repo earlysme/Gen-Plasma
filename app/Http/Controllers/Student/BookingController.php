@@ -168,7 +168,7 @@ class BookingController extends Controller
         $student = Auth::user();
         $scheduleDate = Carbon::parse($request->date);
 
-        // 0. Validasi Sesi Khusus Sabtu (Sesi 7 s/d 10 hanya hari Sabtu)
+        // 0. Validasi Sesi Khusus Sabtu (Sesi 7 s/d 9 hanya hari Sabtu)
         $timeSlot = TimeSlot::findOrFail($request->time_slot_id);
         if ($timeSlot->is_saturday_only && ! $scheduleDate->isSaturday()) {
             return back()->withInput()->with('error', "Sesi {$timeSlot->name} hanya tersedia untuk kegiatan konsultasi pada hari Sabtu.");

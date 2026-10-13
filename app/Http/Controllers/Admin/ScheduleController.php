@@ -120,7 +120,7 @@ class ScheduleController extends Controller
         $program = Program::findOrFail($validated['program_id']);
         $timeSlot = TimeSlot::findOrFail($validated['time_slot_id']);
 
-        // 0. Validasi Sesi Khusus Sabtu (Sesi 7 s/d 10 hanya hari Sabtu)
+        // 0. Validasi Sesi Khusus Sabtu (Sesi 7 s/d 9 hanya hari Sabtu)
         if ($timeSlot->is_saturday_only && ! Carbon::parse($validated['date'])->isSaturday()) {
             return back()->withInput()->with('error', "Sesi {$timeSlot->name} hanya dibuka untuk bimbingan pada hari Sabtu.");
         }
