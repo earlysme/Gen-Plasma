@@ -212,7 +212,16 @@
                     </a>
                 @endif
             </nav>
-            <div class="sidebar-bottom"><div class="profile-mini"><span class="avatar">{{ $initials }}</span><span class="profile-meta"><strong>{{ $user->name }}</strong><span>{{ $section }}</span></span></div></div>
+            <div class="sidebar-bottom">
+                <div class="profile-mini">
+                    @if($user->profile_photo_url)
+                        <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" style="width:36px;height:36px;border-radius:12px;object-fit:cover;border:1px solid var(--line);flex-shrink:0;">
+                    @else
+                        <span class="avatar">{{ $initials }}</span>
+                    @endif
+                    <span class="profile-meta"><strong>{{ $user->name }}</strong><span>{{ $section }}</span></span>
+                </div>
+            </div>
         </aside>
         <div class="scrim" id="scrim"></div>
         <header class="topbar"><button class="mobile-menu" id="menuToggle" aria-label="Buka navigasi">☰</button><div class="breadcrumb"><span>Gen Plasma</span><span>/</span><strong>@yield('title', 'Dashboard')</strong></div><div class="top-actions"><button class="icon-btn" id="themeToggle" type="button" title="Ganti tema">☾</button><form action="{{ route('logout') }}" method="POST">@csrf <button class="btn-logout" type="submit">↪ <span>Keluar</span></button></form></div></header>

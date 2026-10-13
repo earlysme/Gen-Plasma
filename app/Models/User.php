@@ -27,12 +27,25 @@ class User extends Authenticatable
         'program_id',
         'weekly_frequency',
         'preferred_days',
+        'profile_photo',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    /**
+     * URL Foto Profil Tutor / User.
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if ($this->profile_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->profile_photo)) {
+            return asset('storage/' . $this->profile_photo);
+        }
+
+        return null;
+    }
 
     protected function casts(): array
     {

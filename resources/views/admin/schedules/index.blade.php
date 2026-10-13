@@ -141,8 +141,8 @@
 
     /* Avatar Tutor Mini */
     .tutor-avatar-mini {
-        width: 28px;
-        height: 28px;
+        width: 30px;
+        height: 30px;
         border-radius: 8px;
         background: var(--primary-soft);
         color: var(--primary);
@@ -152,6 +152,14 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+    }
+
+    .tutor-avatar-mini img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     /* Program Chip */
@@ -451,7 +459,13 @@
                                 </td>
                                 <td>
                                     <div style="display:flex;align-items:center;gap:8px;">
-                                        <span class="tutor-avatar-mini">{{ $tutorInit }}</span>
+                                        <span class="tutor-avatar-mini">
+                                            @if($s->tutor->profile_photo_url)
+                                                <img src="{{ $s->tutor->profile_photo_url }}" alt="{{ $s->tutor->name }}">
+                                            @else
+                                                {{ $tutorInit }}
+                                            @endif
+                                        </span>
                                         <span style="font-weight:700;color:var(--text);">{{ $s->tutor->name }}</span>
                                     </div>
                                 </td>

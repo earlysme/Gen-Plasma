@@ -365,14 +365,22 @@
     .sb-tutor-avatar {
         display: grid;
         place-items: center;
-        width: 26px;
-        height: 26px;
-        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
         background: var(--primary-soft);
         color: var(--primary);
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 800;
         flex-shrink: 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+    }
+
+    .sb-tutor-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     /* Program & Ruangan */
@@ -701,7 +709,13 @@
                                 {{-- Kolom 3: Pengajar / Tutor --}}
                                 <td>
                                     <div class="sb-tutor-name">
-                                        <div class="sb-tutor-avatar">{{ $tutorInitial }}</div>
+                                        <div class="sb-tutor-avatar">
+                                            @if($s->tutor->profile_photo_url)
+                                                <img src="{{ $s->tutor->profile_photo_url }}" alt="{{ $s->tutor->name }}">
+                                            @else
+                                                <span>{{ $tutorInitial }}</span>
+                                            @endif
+                                        </div>
                                         <span>{{ $s->tutor->name }}</span>
                                     </div>
                                 </td>
@@ -782,7 +796,13 @@
                                 <span>{{ $s->timeSlot->name }} ({{ substr($s->timeSlot->start_time, 0, 5) }} &ndash; {{ substr($s->timeSlot->end_time, 0, 5) }} WIB)</span>
                             </div>
                             <div class="sb-m-meta-item">
-                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                                <div class="sb-tutor-avatar" style="width:24px;height:24px;font-size:10px;border-radius:7px;">
+                                    @if($s->tutor->profile_photo_url)
+                                        <img src="{{ $s->tutor->profile_photo_url }}" alt="{{ $s->tutor->name }}">
+                                    @else
+                                        <span>{{ $tutorInitial }}</span>
+                                    @endif
+                                </div>
                                 <span>Tutor: <strong>{{ $s->tutor->name }}</strong></span>
                             </div>
                             <div class="sb-m-meta-item">

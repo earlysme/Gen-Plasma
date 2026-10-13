@@ -9,6 +9,7 @@ use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
@@ -55,6 +56,7 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:150', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
             'role' => ['required', 'in:admin,tutor,student'],
+            'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'phone' => ['nullable', 'string', 'max:25'],
             'address' => ['nullable', 'string', 'max:255'],
             'school_origin' => ['nullable', 'string', 'max:100'],
@@ -67,11 +69,17 @@ class UserController extends Controller
             'subject_ids.*' => ['exists:subjects,id'],
         ]);
 
+        $photoPath = null;
+        if ($request->hasFile('profile_photo')) {
+            $photoPath = $request->file('profile_photo')->store('profile-photos', 'public');
+        }
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => strtolower(trim($validated['email'])),
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
+            'profile_photo' => $photoPath,
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
             'school_origin' => $validated['school_origin'] ?? null,
@@ -109,6 +117,7 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:6'],
             'role' => ['required', 'in:admin,tutor,student'],
+            'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'phone' => ['nullable', 'string', 'max:25'],
             'address' => ['nullable', 'string', 'max:255'],
             'school_origin' => ['nullable', 'string', 'max:100'],
@@ -134,6 +143,13 @@ class UserController extends Controller
             'weekly_frequency' => $validated['weekly_frequency'] ?? 2,
             'preferred_days' => $validated['preferred_days'] ?? null,
         ];
+
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $updateData['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
+        }
 
         if (!empty($validated['password'])) {
             $updateData['password'] = Hash::make($validated['password']);
@@ -162,6 +178,9 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $role = $user->role;
+        if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
         $user->roles()->detach();
         $user->taughtSubjects()->detach();
         $user->enrolledSubjects()->detach();

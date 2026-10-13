@@ -70,11 +70,22 @@
                     @endphp
                     <tr>
                         <td style="padding:14px 20px;">
-                            <strong style="color:var(--text);font-size:14px;">{{ $u->name }}</strong>
-                            <small style="display:block;color:var(--muted);font-size:12px;">{{ $u->email }}</small>
-                            @if($u->phone)
-                                <small style="display:block;color:var(--muted);font-size:11px;">WA: {{ $u->phone }}</small>
-                            @endif
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-soft);color:var(--primary);font-weight:800;display:grid;place-items:center;overflow:hidden;flex-shrink:0;border:1px solid var(--line);">
+                                    @if($u->profile_photo_url)
+                                        <img src="{{ $u->profile_photo_url }}" alt="{{ $u->name }}" style="width:100%;height:100%;object-fit:cover;">
+                                    @else
+                                        <span>{{ mb_substr($u->name, 0, 1) }}</span>
+                                    @endif
+                                </div>
+                                <div>
+                                    <strong style="color:var(--text);font-size:14px;">{{ $u->name }}</strong>
+                                    <small style="display:block;color:var(--muted);font-size:12px;">{{ $u->email }}</small>
+                                    @if($u->phone)
+                                        <small style="display:block;color:var(--muted);font-size:11px;">WA: {{ $u->phone }}</small>
+                                    @endif
+                                </div>
+                            </div>
                         </td>
 
                         @if($roleFilter === 'student')
@@ -170,7 +181,7 @@
 
 {{-- Dialog Tambah Pengguna --}}
 <dialog id="dlg-create-user" class="card" style="width:min(92vw,560px);padding:24px;border-radius:18px;margin:auto;">
-    <form action="{{ route('admin.users.store') }}" method="POST">
+    <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <h3 style="font:800 18px 'Plus Jakarta Sans';margin-bottom:16px;">Tambah Pengguna Baru</h3>
 
@@ -200,6 +211,12 @@
                     <option value="admin" {{ $roleFilter === 'admin' ? 'selected' : '' }}>Admin</option>
                 </select>
             </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:12px;">
+            <label>Foto Profil (Opsional - Tutor/User)</label>
+            <input type="file" name="profile_photo" class="form-control" accept="image/*" style="padding:6px 10px;">
+            <small style="color:var(--muted);font-size:11.5px;">Format JPG, PNG, WEBP max 2MB. Sangat dianjurkan untuk tutor agar terlihat di katalog siswa.</small>
         </div>
 
         <div class="grid grid-cols-2" style="gap:12px;">
@@ -286,7 +303,7 @@
 
 {{-- Dialog Edit Pengguna --}}
 <dialog id="dlg-edit-user" class="card" style="width:min(92vw,560px);padding:24px;border-radius:18px;margin:auto;">
-    <form id="form-edit-user" method="POST">
+    <form id="form-edit-user" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <h3 style="font:800 18px 'Plus Jakarta Sans';margin-bottom:16px;">Edit Data Pengguna</h3>
@@ -317,6 +334,15 @@
                     <option value="admin">Admin</option>
                 </select>
             </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:12px;">
+            <label>Foto Profil (Opsional - Tutor/User)</label>
+            <div id="edit-photo-preview-wrap" style="display:none;margin-bottom:8px;align-items:center;gap:10px;">
+                <img id="edit-photo-preview" src="" alt="Foto saat ini" style="width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid var(--line);">
+                <small style="color:var(--muted);font-size:12px;">Foto saat ini. Pilih file baru untuk mengganti.</small>
+            </div>
+            <input type="file" name="profile_photo" class="form-control" accept="image/*" style="padding:6px 10px;">
         </div>
 
         <div class="grid grid-cols-2" style="gap:12px;">
@@ -410,6 +436,16 @@ function editUser(user, subjectIds) {
     document.getElementById('edit-user-edu').value = user.education_level_id || '';
     document.getElementById('edit-user-prog').value = user.program_id || '';
     document.getElementById('edit-user-freq').value = user.weekly_frequency || 2;
+
+    const previewWrap = document.getElementById('edit-photo-preview-wrap');
+    const previewImg = document.getElementById('edit-photo-preview');
+    if (user.profile_photo_url) {
+        previewImg.src = user.profile_photo_url;
+        previewWrap.style.display = 'flex';
+    } else {
+        previewImg.src = '';
+        previewWrap.style.display = 'none';
+    }
 
     document.querySelectorAll('.edit-sub-check').forEach(chk => {
         const id = parseInt(chk.getAttribute('data-id'));
