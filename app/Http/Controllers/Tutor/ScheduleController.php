@@ -53,7 +53,7 @@ class ScheduleController extends Controller
             ->orderBy('code')
             ->get();
 
-        $dayPhysicalSchedules = Schedule::with(['tutor', 'subject', 'room', 'timeSlot', 'program'])
+        $dayPhysicalSchedules = Schedule::with(['tutor', 'subject', 'room', 'timeSlot', 'program', 'educationLevel'])
             ->where('date', $checkDate)
             ->where('status', '!=', 'cancelled')
             ->whereHas('room', function ($q) {

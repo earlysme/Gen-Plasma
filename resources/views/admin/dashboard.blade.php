@@ -365,6 +365,61 @@
         margin-top: 3px;
         font-weight: 500;
     }
+
+    /* Badge Jenjang Pendidikan (SD, SMP, SMA) */
+    .badge-level {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .badge-level-sd {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FCD34D;
+    }
+    .badge-level-smp {
+        background: #DCFCE7;
+        color: #166534;
+        border: 1px solid #86EFAC;
+    }
+    .badge-level-sma {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FCA5A5;
+    }
+    .badge-level-default {
+        background: var(--surface-2);
+        color: var(--muted);
+        border: 1px solid var(--line);
+    }
+
+    /* Chip Tag Tutor Dinamis (Opsi C) */
+    .tutor-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        max-width: 100%;
+        padding: 1.5px 7px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        margin-top: 2px;
+    }
+    .tutor-tag-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
     .legend-item {
         display: inline-flex;
         align-items: center;
@@ -499,6 +554,12 @@
                 <span class="legend-box legend-box-booked"></span>
                 Terpakai
             </span>
+            <span style="border-left: 1px solid var(--line); padding-left: 10px; margin-left: 4px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); font-weight: 600;">
+                Jenjang:
+                <span class="badge-level badge-level-sd" style="margin-bottom:0;">SD</span>
+                <span class="badge-level badge-level-smp" style="margin-bottom:0;">SMP</span>
+                <span class="badge-level badge-level-sma" style="margin-bottom:0;">SMA</span>
+            </span>
         </div>
 
         {{-- Form Pemilih Tanggal Bebas --}}
@@ -552,14 +613,39 @@
                         @foreach($timeSlots as $slot)
                             @php
                                 $booked = $occupancyMatrix[$room->id][$slot->id] ?? null;
+                                $lvlCode = $booked && $booked->educationLevel ? strtolower($booked->educationLevel->code) : null;
+                                $lvlName = $booked && $booked->educationLevel ? $booked->educationLevel->name : null;
+                                $tutorColor = null;
+                                if ($booked) {
+                                    $tutorPalettes = [
+                                        ['bg' => '#EFF6FF', 'text' => '#1D4ED8', 'border' => '#BFDBFE'],
+                                        ['bg' => '#F5F3FF', 'text' => '#6D28D9', 'border' => '#DDD6FE'],
+                                        ['bg' => '#FFF1F2', 'text' => '#BE123C', 'border' => '#FECDD3'],
+                                        ['bg' => '#F0FDFA', 'text' => '#0F766E', 'border' => '#99F6E4'],
+                                        ['bg' => '#FFFBEB', 'text' => '#B45309', 'border' => '#FDE68A'],
+                                        ['bg' => '#FDF4FF', 'text' => '#A21CAF', 'border' => '#F5D0FE'],
+                                        ['bg' => '#ECFEFF', 'text' => '#0E7490', 'border' => '#A5F3FC'],
+                                        ['bg' => '#F1F5F9', 'text' => '#334155', 'border' => '#CBD5E1'],
+                                    ];
+                                    $tutorColor = $tutorPalettes[abs(crc32((string) $booked->tutor_id)) % count($tutorPalettes)];
+                                }
                             @endphp
                             <td class="{{ $booked ? 'matrix-cell-booked' : 'matrix-cell-empty' }}">
                                 @if($booked)
+                                    @if($lvlCode)
+                                        <div style="margin-bottom: 3px;">
+                                            <span class="badge-level badge-level-{{ in_array($lvlCode, ['sd','smp','sma']) ? $lvlCode : 'default' }}">
+                                                {{ $lvlName }}
+                                            </span>
+                                        </div>
+                                    @endif
                                     <div class="matrix-booked-subject">
                                         {{ $booked->subject->name }}
                                     </div>
-                                    <div class="matrix-booked-tutor">
-                                        Tutor: {{ $booked->tutor->name }}
+                                    <div>
+                                        <span class="tutor-tag" style="background: {{ $tutorColor['bg'] }}; color: {{ $tutorColor['text'] }}; border-color: {{ $tutorColor['border'] }};">
+                                            <span class="tutor-tag-name">{{ $booked->tutor->name }}</span>
+                                        </span>
                                     </div>
                                     <div class="matrix-booked-quota">
                                         {{ $booked->booked_count }}/{{ $booked->quota_max }} Kursi

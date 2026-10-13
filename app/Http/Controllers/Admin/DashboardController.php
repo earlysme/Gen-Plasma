@@ -66,7 +66,7 @@ class DashboardController extends Controller
         $rooms = Room::where('is_physical', true)->where('is_active', true)->orderBy('code')->get();
         $timeSlots = TimeSlot::forDate($selectedDate);
 
-        $schedulesOnDate = Schedule::with(['tutor', 'subject', 'program', 'room', 'timeSlot'])
+        $schedulesOnDate = Schedule::with(['tutor', 'subject', 'program', 'room', 'timeSlot', 'educationLevel'])
             ->where('date', $selectedDate->toDateString())
             ->where('status', '!=', 'cancelled')
             ->get();

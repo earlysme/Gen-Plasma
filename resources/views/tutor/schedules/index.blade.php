@@ -399,6 +399,61 @@
             white-space: nowrap;
         }
 
+        /* Badge Jenjang Pendidikan (SD, SMP, SMA) */
+        .badge-level {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .badge-level-sd {
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FCD34D;
+        }
+        .badge-level-smp {
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #86EFAC;
+        }
+        .badge-level-sma {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FCA5A5;
+        }
+        .badge-level-default {
+            background: var(--surface-2);
+            color: var(--muted);
+            border: 1px solid var(--line);
+        }
+
+        /* Chip Tag Tutor Dinamis (Opsi C) */
+        .tutor-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            max-width: 100%;
+            padding: 1.5px 6px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 700;
+            line-height: 1.2;
+            border: 1px solid transparent;
+            margin-bottom: 2px;
+        }
+        .tutor-tag-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         /* Agenda Section */
         .jd-agenda-grid {
             display: grid;
@@ -846,6 +901,23 @@
             'cancelled' => ['Batal', 'btn-danger'],
             'scheduled' => ['Aktif', 'badge-student'],
         ];
+
+        // Palet warna dinamis ramah mata untuk Tutor Lain (Opsi C)
+        $tutorPalettes = [
+            ['bg' => '#EFF6FF', 'text' => '#1D4ED8', 'border' => '#BFDBFE'], // Biru lembut
+            ['bg' => '#F5F3FF', 'text' => '#6D28D9', 'border' => '#DDD6FE'], // Ungu
+            ['bg' => '#FFF1F2', 'text' => '#BE123C', 'border' => '#FECDD3'], // Rose
+            ['bg' => '#F0FDFA', 'text' => '#0F766E', 'border' => '#99F6E4'], // Teal
+            ['bg' => '#FFFBEB', 'text' => '#B45309', 'border' => '#FDE68A'], // Amber
+            ['bg' => '#FDF4FF', 'text' => '#A21CAF', 'border' => '#F5D0FE'], // Fuchsia
+            ['bg' => '#ECFEFF', 'text' => '#0E7490', 'border' => '#A5F3FC'], // Cyan
+            ['bg' => '#F1F5F9', 'text' => '#334155', 'border' => '#CBD5E1'], // Slate
+        ];
+
+        $getTutorColor = function ($tutorId) use ($tutorPalettes) {
+            $idx = abs(crc32((string) $tutorId)) % count($tutorPalettes);
+            return $tutorPalettes[$idx];
+        };
     @endphp
 
     <div class="jd">
@@ -903,6 +975,12 @@
                     <span><i class="free"></i>Kosong <b>{{ $stats['empty'] }}</b></span>
                     <span><i class="mine"></i>Jadwal saya <b>{{ $stats['mine'] }}</b></span>
                     <span><i class="other"></i>Pengajar lain <b>{{ $stats['others'] }}</b></span>
+                    <span style="border-left: 1px solid var(--line); padding-left: 10px; margin-left: 4px; display: inline-flex; align-items: center; gap: 6px;">
+                        Jenjang:
+                        <span class="badge-level badge-level-sd" style="margin-bottom:0;">SD</span>
+                        <span class="badge-level badge-level-smp" style="margin-bottom:0;">SMP</span>
+                        <span class="badge-level badge-level-sma" style="margin-bottom:0;">SMA</span>
+                    </span>
                 </div>
             </div>
 
@@ -930,6 +1008,9 @@
                                     @php
                                         $cell = $physicalGrid[$ts->id][$rm->id] ?? null;
                                         $isMine = $cell && (int)$cell->tutor_id === (int)Auth::id();
+                                        $lvlCode = $cell && $cell->educationLevel ? strtolower($cell->educationLevel->code) : null;
+                                        $lvlName = $cell && $cell->educationLevel ? $cell->educationLevel->name : null;
+                                        $tutorColor = ($cell && !$isMine) ? $getTutorColor($cell->tutor_id) : null;
                                     @endphp
                                     <td>
                                         @if (!$cell)
@@ -941,7 +1022,19 @@
                                             </button>
                                         @else
                                             <div class="jd-cell {{ $isMine ? 'jd-cell-mine' : 'jd-cell-other' }}">
-                                                <strong>{{ $isMine ? 'Saya' : \Illuminate\Support\Str::words($cell->tutor->name, 1, '') }}</strong>
+                                                @if($lvlCode)
+                                                    <span class="badge-level badge-level-{{ in_array($lvlCode, ['sd','smp','sma']) ? $lvlCode : 'default' }}">
+                                                        {{ $lvlName }}
+                                                    </span>
+                                                @endif
+
+                                                @if($isMine)
+                                                    <strong>Saya</strong>
+                                                @else
+                                                    <span class="tutor-tag" style="background: {{ $tutorColor['bg'] }}; color: {{ $tutorColor['text'] }}; border-color: {{ $tutorColor['border'] }};">
+                                                        <span class="tutor-tag-name">{{ \Illuminate\Support\Str::words($cell->tutor->name, 1, '') }}</span>
+                                                    </span>
+                                                @endif
                                                 <span>{{ $cell->subject->name }}</span>
                                             </div>
                                         @endif
@@ -970,6 +1063,9 @@
                                 @php
                                     $cell = $physicalGrid[$ts->id][$rm->id] ?? null;
                                     $isMine = $cell && (int)$cell->tutor_id === (int)Auth::id();
+                                    $lvlCode = $cell && $cell->educationLevel ? strtolower($cell->educationLevel->code) : null;
+                                    $lvlName = $cell && $cell->educationLevel ? $cell->educationLevel->name : null;
+                                    $tutorColor = ($cell && !$isMine) ? $getTutorColor($cell->tutor_id) : null;
                                 @endphp
                                 <div class="jd-m-room-card {{ $cell ? ($isMine ? 'm-mine' : 'm-other') : 'm-empty' }}">
                                     <div class="jd-m-room-meta">
@@ -987,9 +1083,22 @@
                                             </button>
                                         @else
                                             <div class="jd-m-badge-booked {{ $isMine ? 'is-mine' : 'is-other' }}">
-                                                <div class="jd-m-badge-top">
-                                                    <span class="jd-m-status-dot"></span>
-                                                    <strong>{{ $isMine ? 'Saya' : \Illuminate\Support\Str::words($cell->tutor->name, 1, '') }}</strong>
+                                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-bottom: 2px;">
+                                                    <div class="jd-m-badge-top">
+                                                        <span class="jd-m-status-dot"></span>
+                                                        @if($isMine)
+                                                            <strong>Saya</strong>
+                                                        @else
+                                                            <span class="tutor-tag" style="background: {{ $tutorColor['bg'] }}; color: {{ $tutorColor['text'] }}; border-color: {{ $tutorColor['border'] }}; margin-bottom: 0;">
+                                                                <span class="tutor-tag-name">{{ \Illuminate\Support\Str::words($cell->tutor->name, 1, '') }}</span>
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    @if($lvlCode)
+                                                        <span class="badge-level badge-level-{{ in_array($lvlCode, ['sd','smp','sma']) ? $lvlCode : 'default' }}" style="margin-bottom:0;">
+                                                            {{ $lvlName }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <span class="jd-m-subject">{{ $cell->subject->name }}</span>
                                             </div>
