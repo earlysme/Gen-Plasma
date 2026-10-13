@@ -867,6 +867,7 @@
                             <input type="date" id="consult_date" name="date" class="form-control"
                                    min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
                                    value="{{ old('date') }}"
+                                   onchange="filterConsultTimeSlots(this.value)"
                                    required>
                             @error('date')<p style="color: var(--pink-text); font-size: 11px; margin: 3px 0 0;">{{ $message }}</p>@enderror
                         </div>
@@ -879,7 +880,9 @@
                             <select id="consult_time_slot" name="time_slot_id" class="form-control" required>
                                 <option value="">-- Pilih Sesi --</option>
                                 @foreach($timeSlots as $ts)
-                                    <option value="{{ $ts->id }}" {{ old('time_slot_id') == $ts->id ? 'selected' : '' }}>
+                                    <option value="{{ $ts->id }}"
+                                            data-is-saturday="{{ $ts->is_saturday_only ? '1' : '0' }}"
+                                            {{ old('time_slot_id') == $ts->id ? 'selected' : '' }}>
                                         {{ $ts->name }} ({{ substr($ts->start_time, 0, 5) }} &ndash; {{ substr($ts->end_time, 0, 5) }})
                                     </option>
                                 @endforeach
@@ -976,10 +979,58 @@ function filterTutors(subjectId) {
     });
 }
 
+function filterConsultTimeSlots(dateVal) {
+    const slotSelect = document.getElementById('consult_time_slot');
+    if (!slotSelect) return;
+
+    let isSaturday = false;
+    if (dateVal) {
+        // Gunakan split YYYY-MM-DD agar terhindar dari timezone offset UTC
+        const parts = dateVal.split('-');
+        if (parts.length === 3) {
+            const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            isSaturday = (d.getDay() === 6);
+        }
+    }
+
+    const options = slotSelect.querySelectorAll('option');
+    options.forEach(opt => {
+        if (!opt.value) return; // opsi placeholder "-- Pilih Sesi --"
+        const isSatOnly = opt.getAttribute('data-is-saturday') === '1';
+
+        if (isSatOnly) {
+            if (isSaturday) {
+                opt.hidden = false;
+                opt.disabled = false;
+                opt.style.display = '';
+            } else {
+                opt.hidden = true;
+                opt.disabled = true;
+                opt.style.display = 'none';
+                if (slotSelect.value === opt.value) {
+                    slotSelect.value = '';
+                }
+            }
+        } else {
+            opt.hidden = false;
+            opt.disabled = false;
+            opt.style.display = '';
+        }
+    });
+}
+
 function openConsultModal() {
     const overlay = document.getElementById('consult-modal-overlay');
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+
+    // Inisialisasi filter sesi saat modal dibuka sesuai tanggal saat ini
+    const dateInput = document.getElementById('consult_date');
+    if (dateInput && dateInput.value) {
+        filterConsultTimeSlots(dateInput.value);
+    } else {
+        filterConsultTimeSlots('');
+    }
 }
 
 function closeConsultModal(event) {

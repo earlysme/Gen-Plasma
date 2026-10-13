@@ -48,6 +48,6 @@ class TimeSlot extends Model
             $query->where('session_number', '<=', 6);
         }
 
-        return $query->orderBy('session_number')->get();
+        return $query->orderBy('start_time')->get();
     }
 }

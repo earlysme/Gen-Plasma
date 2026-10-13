@@ -66,7 +66,7 @@ class BookingController extends Controller
 
         // Data pendukung untuk Siswa membuat jadwal Konsultasi mandiri
         $subjects = Subject::with('tutors')->orderBy('name')->get();
-        $timeSlots = TimeSlot::where('is_active', true)->orderBy('session_number')->get();
+        $timeSlots = TimeSlot::where('is_active', true)->orderBy('start_time')->get();
 
         return view('student.bookings.index', compact(
             'schedules',
