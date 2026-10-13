@@ -19,6 +19,36 @@ use Illuminate\Support\Str;
 class ScheduleController extends Controller
 {
     /**
+     * Dashboard Pengajar: Statistik, Agenda Mengajar & Aktivitas Murid.
+     */
+    public function dashboard()
+    {
+        /** @var User $tutor */
+        $tutor = Auth::user();
+
+        // Jadwal milik tutor yang sedang login
+        $schedules = Schedule::with(['subject', 'room', 'timeSlot', 'educationLevel', 'program', 'activeBookings.student'])
+            ->where('tutor_id', $tutor->id)
+            ->orderBy('date', 'desc')
+            ->orderBy('time_slot_id', 'asc')
+            ->get();
+
+        // Aktivitas terbaru real milik tutor ini (booking murid di jadwal tutor)
+        $recentBookings = Booking::with(['student', 'schedule.subject', 'schedule.timeSlot', 'schedule.room'])
+            ->whereHas('schedule', function ($q) use ($tutor) {
+                $q->where('tutor_id', $tutor->id);
+            })
+            ->latest()
+            ->take(6)
+            ->get();
+
+        // Daftar murid aktif untuk modal direct assignment
+        $studentsList = User::role('student')->orderBy('name')->get();
+
+        return view('tutor.dashboard', compact('schedules', 'recentBookings', 'studentsList'));
+    }
+
+    /**
      * Dashboard & Daftar Jadwal Pengajar.
      */
     public function index(Request $request)

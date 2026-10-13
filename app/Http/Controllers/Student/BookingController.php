@@ -38,6 +38,18 @@ class BookingController extends Controller
             });
         }
 
+        // Filter sesuai mata pelajaran yang diambil siswa, KECUALI program konsultasi (consult)
+        $enrolledSubjectIds = $student->enrolledSubjects()->pluck('subjects.id')->toArray();
+        if (!empty($enrolledSubjectIds)) {
+            $query->where(function ($q) use ($enrolledSubjectIds) {
+                // Tampilkan jika mata pelajaran diambil siswa ATAU jika programnya adalah konsultasi
+                $q->whereIn('subject_id', $enrolledSubjectIds)
+                    ->orWhereHas('program', function ($pq) {
+                        $pq->where('code', 'consult');
+                    });
+            });
+        }
+
         if ($request->filled('date')) {
             $filterDate = Carbon::parse($request->date);
             $query->whereDate('date', $filterDate);
@@ -145,6 +157,15 @@ class BookingController extends Controller
         if ($student->education_level_id && $schedule->education_level_id) {
             if ((int) $student->education_level_id !== (int) $schedule->education_level_id) {
                 return back()->with('error', 'Anda tidak dapat memesan jadwal ini karena jenjang kelas tidak sesuai dengan jenjang pendidikan Anda.');
+            }
+        }
+
+        // Validasi mata pelajaran yang diambil siswa (Kecuali sesi konsultasi)
+        $isConsultProgram = $schedule->program && $schedule->program->code === 'consult';
+        if (! $isConsultProgram) {
+            $enrolledSubjectIds = $student->enrolledSubjects()->pluck('subjects.id')->toArray();
+            if (!empty($enrolledSubjectIds) && !in_array($schedule->subject_id, $enrolledSubjectIds)) {
+                return back()->with('error', 'Mata pelajaran ini tidak terdaftar dalam paket bimbingan yang Anda ambil.');
             }
         }
 

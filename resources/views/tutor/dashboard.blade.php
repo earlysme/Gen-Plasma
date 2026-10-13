@@ -406,7 +406,7 @@
 @php
     $tutor = Auth::user();
 
-    // 1. Ambil data jadwal dari database jika belum diinjeksi oleh controller teman Anda
+    // 1. Data jadwal milik tutor (dari controller atau fallback langsung khusus tutor login)
     if (!isset($schedules)) {
         try {
             $schedules = \App\Models\Schedule::with(['subject', 'room', 'timeSlot', 'educationLevel', 'program', 'activeBookings.student'])
@@ -419,92 +419,30 @@
         }
     }
 
-    // 2. Jika database belum memiliki jadwal untuk tutor ini, sediakan mock data visual
-    $isUsingSample = $schedules->isEmpty();
-    if ($isUsingSample) {
-        $displaySchedules = collect([
-            (object)[
-                'id' => 101,
-                'date' => \Carbon\Carbon::today()->toDateString(),
-                'status' => 'scheduled',
-                'quota_max' => 6,
-                'booked_count' => 4,
-                'subject' => (object)['name' => 'Matematika Saintek'],
-                'room' => (object)['name' => 'Ruang R1'],
-                'timeSlot' => (object)['name' => 'Sesi 1 (14:00 - 15:30 WIB)'],
-                'program' => (object)['name' => 'Reguler', 'code' => 'reguler'],
-                'activeBookings' => collect([
-                    (object)['student' => (object)['name' => 'Ahmad Fauzi']],
-                    (object)['student' => (object)['name' => 'Siti Nurhaliza']],
-                    (object)['student' => (object)['name' => 'Budi Santoso']],
-                    (object)['student' => (object)['name' => 'Dewi Anggraini']],
-                ]),
-                'isFull' => fn() => false,
-            ],
-            (object)[
-                'id' => 102,
-                'date' => \Carbon\Carbon::today()->toDateString(),
-                'status' => 'scheduled',
-                'quota_max' => 6,
-                'booked_count' => 6,
-                'subject' => (object)['name' => 'Fisika Dasar'],
-                'room' => (object)['name' => 'Ruang R3'],
-                'timeSlot' => (object)['name' => 'Sesi 2 (15:45 - 17:15 WIB)'],
-                'program' => (object)['name' => 'Reguler', 'code' => 'reguler'],
-                'activeBookings' => collect([
-                    (object)['student' => (object)['name' => 'Reza Rahardian']],
-                    (object)['student' => (object)['name' => 'Andi Pratama']],
-                    (object)['student' => (object)['name' => 'Maya Kusuma']],
-                    (object)['student' => (object)['name' => 'Kevin Sanjaya']],
-                    (object)['student' => (object)['name' => 'Putri Ayu']],
-                    (object)['student' => (object)['name' => 'Fajar Alfian']],
-                ]),
-                'isFull' => fn() => true,
-            ],
-            (object)[
-                'id' => 103,
-                'date' => \Carbon\Carbon::tomorrow()->toDateString(),
-                'status' => 'scheduled',
-                'quota_max' => 2,
-                'booked_count' => 1,
-                'subject' => (object)['name' => 'Konsultasi Kimia'],
-                'room' => (object)['name' => 'Ruang Konsul 1'],
-                'timeSlot' => (object)['name' => 'Sesi 3 (18:30 - 20:00 WIB)'],
-                'program' => (object)['name' => 'Konsultasi Privat', 'code' => 'consult'],
-                'activeBookings' => collect([
-                    (object)['student' => (object)['name' => 'Zahra Amelia']],
-                ]),
-                'isFull' => fn() => false,
-            ],
-            (object)[
-                'id' => 104,
-                'date' => \Carbon\Carbon::yesterday()->toDateString(),
-                'status' => 'completed',
-                'quota_max' => 6,
-                'booked_count' => 5,
-                'subject' => (object)['name' => 'Matematika Wajib'],
-                'room' => (object)['name' => 'Ruang R2'],
-                'timeSlot' => (object)['name' => 'Sesi 1 (14:00 - 15:30 WIB)'],
-                'program' => (object)['name' => 'Reguler', 'code' => 'reguler'],
-                'activeBookings' => collect([
-                    (object)['student' => (object)['name' => 'Dimas Arya']],
-                    (object)['student' => (object)['name' => 'Nabila Putri']],
-                    (object)['student' => (object)['name' => 'Rizky Febian']],
-                    (object)['student' => (object)['name' => 'Tiara Andini']],
-                    (object)['student' => (object)['name' => 'Lyodra Ginting']],
-                ]),
-                'isFull' => fn() => false,
-            ],
-        ]);
-    } else {
-        $displaySchedules = $schedules;
+    $displaySchedules = $schedules;
+
+    // 2. Aktivitas terbaru riil milik tutor ini
+    if (!isset($recentBookings)) {
+        try {
+            $recentBookings = \App\Models\Booking::with(['student', 'schedule.subject', 'schedule.timeSlot', 'schedule.room'])
+                ->whereHas('schedule', function ($q) use ($tutor) {
+                    $q->where('tutor_id', $tutor->id);
+                })
+                ->latest()
+                ->take(6)
+                ->get();
+        } catch (\Throwable $e) {
+            $recentBookings = collect();
+        }
     }
 
-    // Ambil daftar murid untuk modal tambah murid
-    try {
-        $studentsList = \App\Models\User::role('student')->orderBy('name')->get();
-    } catch (\Throwable $e) {
-        $studentsList = collect();
+    // 3. Daftar murid untuk modal direct assignment
+    if (!isset($studentsList)) {
+        try {
+            $studentsList = \App\Models\User::role('student')->orderBy('name')->get();
+        } catch (\Throwable $e) {
+            $studentsList = collect();
+        }
     }
 
     // Status map
@@ -514,7 +452,7 @@
         'scheduled' => ['Aktif', 'badge-student'],
     ];
 
-    // Hitung statistik ringkas
+    // Hitung statistik ringkas khusus jadwal tutor yang login
     $todaySchedulesCount = $displaySchedules->filter(function($s) {
         return \Carbon\Carbon::parse($s->date)->isToday() && $s->status === 'scheduled';
     })->count();
@@ -617,22 +555,22 @@
                     <article class="td-agenda-card status-{{ $s->status }}" data-tags="{{ $filterTag }}">
                         <div class="td-agenda-head">
                             <div>
-                                <h3 class="td-agenda-title">{{ $s->subject->name }}</h3>
+                                <h3 class="td-agenda-title">{{ $s->subject?->name ?? 'Mata Pelajaran' }}</h3>
                                 <div class="td-agenda-time">
                                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    <span>{{ $dateTag }} • {{ $s->timeSlot->name }}</span>
+                                    <span>{{ $dateTag }} • {{ $s->timeSlot?->name ?? '-' }}</span>
                                 </div>
                             </div>
                             <div style="display:flex;gap:6px;align-items:center;">
-                                <span class="badge" style="background:var(--surface-2);color:var(--muted);font-size:11px;">{{ $s->program->name }}</span>
+                                <span class="badge" style="background:var(--surface-2);color:var(--muted);font-size:11px;">{{ $s->program?->name ?? 'Reguler' }}</span>
                                 <span class="badge {{ $stClass }}">{{ $stLabel }}</span>
                             </div>
                         </div>
 
                         <div class="td-agenda-meta">
                             <span style="display:inline-flex;align-items:center;gap:5px;">
-                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                <strong>{{ $s->room->name }}</strong>
+                                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <strong>{{ $s->room?->name ?? 'Rumah Siswa' }}</strong>
                             </span>
                             <span class="td-seat-bar-wrap">
                                 <span class="td-seat-bar"><i style="width: {{ $fill }}%"></i></span>
@@ -658,7 +596,7 @@
                                 <button type="button" class="btn btn-success" style="padding:7px 12px;font-size:12px;"
                                     data-open="dlg-complete"
                                     data-action="{{ route('tutor.schedules.complete', $s->id) }}"
-                                    data-sub="{{ $s->subject->name }}, {{ $dateTag }}">
+                                    data-sub="{{ $s->subject?->name ?? 'Sesi' }}, {{ $dateTag }}">
                                     ✓ Tandai Selesai
                                 </button>
 
@@ -666,7 +604,7 @@
                                     <button type="button" class="btn btn-secondary" style="padding:7px 12px;font-size:12px;"
                                         data-open="dlg-assign"
                                         data-action="{{ route('tutor.schedules.assignStudent', $s->id) }}"
-                                        data-sub="{{ $s->subject->name }}, {{ $dateTag }}">
+                                        data-sub="{{ $s->subject?->name ?? 'Sesi' }}, {{ $dateTag }}">
                                         + Murid
                                     </button>
                                 @endif
@@ -675,7 +613,7 @@
                                     <button type="button" class="btn btn-danger" style="margin-left:auto;padding:7px 12px;font-size:12px;"
                                         data-open="dlg-cancel"
                                         data-action="{{ route('tutor.schedules.cancel', $s->id) }}"
-                                        data-sub="{{ $s->subject->name }}, {{ $dateTag }}">
+                                        data-sub="{{ $s->subject?->name ?? 'Sesi' }}, {{ $dateTag }}">
                                         Batalkan
                                     </button>
                                 @endif
@@ -716,49 +654,22 @@
                 </div>
 
                 <div class="td-activity-list">
-                    <div class="td-activity-item">
-                        <div class="td-activity-icon" style="background:var(--mint);color:var(--mint-text);">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                    @forelse($recentBookings as $rb)
+                        <div class="td-activity-item">
+                            <div class="td-activity-icon" style="background:var(--mint);color:var(--mint-text);">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                            </div>
+                            <div class="td-activity-content">
+                                <strong>{{ $rb->student?->name ?? 'Murid' }}</strong>
+                                <p>Mendaftar sesi {{ $rb->schedule?->subject?->name ?? 'Bimbingan' }} ({{ $rb->schedule?->timeSlot?->name ?? '-' }}).</p>
+                                <small>{{ $rb->created_at ? $rb->created_at->diffForHumans() : '-' }}</small>
+                            </div>
                         </div>
-                        <div class="td-activity-content">
-                            <strong>Murid Mendaftar Sesi</strong>
-                            <p>Ahmad Fauzi memesan kursi pada Sesi 1 Matematika Saintek.</p>
-                            <small>15 menit yang lalu</small>
+                    @empty
+                        <div style="padding:16px 8px;text-align:center;color:var(--muted);font-size:12.5px;">
+                            Belum ada aktivitas pendaftaran murid terbaru pada jadwal Anda.
                         </div>
-                    </div>
-
-                    <div class="td-activity-item">
-                        <div class="td-activity-icon" style="background:var(--primary-soft);color:var(--primary);">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        </div>
-                        <div class="td-activity-content">
-                            <strong>Sesi Bimbingan Selesai</strong>
-                            <p>Matematika Wajib di Ruang R2 ditandai selesai.</p>
-                            <small>Kemarin, 15:30 WIB</small>
-                        </div>
-                    </div>
-
-                    <div class="td-activity-item">
-                        <div class="td-activity-icon" style="background:var(--accent-gold-soft);color:var(--accent-gold-text);">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        </div>
-                        <div class="td-activity-content">
-                            <strong>Booking Konsultasi Masuk</strong>
-                            <p>Zahra Amelia menjadwalkan sesi Konsultasi Kimia Privat.</p>
-                            <small>Kemarin, 11:20 WIB</small>
-                        </div>
-                    </div>
-
-                    <div class="td-activity-item">
-                        <div class="td-activity-icon" style="background:var(--surface-2);color:var(--muted);">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </div>
-                        <div class="td-activity-content">
-                            <strong>Slot Baru Terbuka</strong>
-                            <p>Slot Fisika Dasar (Sesi 2) berhasil dibuka di Ruang R3.</p>
-                            <small>2 hari yang lalu</small>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
             </section>
 
