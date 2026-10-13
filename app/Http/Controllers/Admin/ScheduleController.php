@@ -125,7 +125,14 @@ class ScheduleController extends Controller
             return back()->withInput()->with('error', "Sesi {$timeSlot->name} hanya dibuka untuk bimbingan pada hari Sabtu.");
         }
 
-        // 1. Validasi Anti-Bentrok Ruangan Fisik
+        // 1. Validasi Alokasi Ruangan Khusus (Privat Bimbel & Konsultasi HANYA Ruang 1 & 2)
+        if (in_array($program->code, ['private_bimbel', 'consult']) && $room->is_physical) {
+            if (! in_array($room->code, ['R1', 'R2'])) {
+                return back()->withInput()->with('error', "Program {$program->name} hanya diperbolehkan menggunakan Ruang 1 atau Ruang 2.");
+            }
+        }
+
+        // Validasi Anti-Bentrok Ruangan Fisik
         if ($room->is_physical) {
             $roomConflict = Schedule::where('date', $validated['date'])
                 ->where('time_slot_id', $validated['time_slot_id'])

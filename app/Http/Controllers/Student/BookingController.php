@@ -209,7 +209,7 @@ class BookingController extends Controller
             return back()->with('error', "Bentrok! Pengajar {$tutor->name} sudah memiliki jadwal lain pada sesi dan tanggal tersebut. Silakan pilih sesi atau hari lain.");
         }
 
-        // 4. Alokasi Ruangan Fisik yang Masih Tersedia (Prioritas kapasitas kecil: R6, R1, R2, dll)
+        // 4. Alokasi Ruangan Fisik Khusus Konsultasi (HANYA Ruang 1 dan Ruang 2)
         $busyRoomIds = Schedule::where('date', $request->date)
             ->where('time_slot_id', $request->time_slot_id)
             ->where('status', '!=', 'cancelled')
@@ -218,12 +218,13 @@ class BookingController extends Controller
 
         $availableRoom = Room::where('is_physical', true)
             ->where('is_active', true)
+            ->whereIn('code', ['R1', 'R2'])
             ->whereNotIn('id', $busyRoomIds)
-            ->orderBy('capacity', 'asc')
+            ->orderBy('code', 'asc')
             ->first();
 
         if (! $availableRoom) {
-            return back()->with('error', 'Semua ruangan bimbingan penuh pada tanggal dan sesi waktu tersebut. Silakan pilih sesi atau hari lain.');
+            return back()->with('error', 'Ruangan khusus konsultasi (Ruang 1 & Ruang 2) sudah terisi penuh pada tanggal dan sesi waktu tersebut. Silakan pilih sesi atau hari lain.');
         }
 
         // 5. Ambil Program Konsultasi

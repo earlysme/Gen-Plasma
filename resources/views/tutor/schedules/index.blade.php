@@ -1470,7 +1470,7 @@
                 noteBox.style.background = 'var(--blue-soft)';
                 noteBox.style.color = 'var(--blue-text)';
                 noteBox.style.border = '1px solid color-mix(in srgb, var(--blue-text) 25%, transparent)';
-                noteBox.innerHTML = '<strong>Sesi Konsultasi:</strong> Sesi tanya jawab materi sekolah. Disarankan ruangan kelompok kecil (R1, R2, atau R6).';
+                noteBox.innerHTML = '<strong>Sesi Konsultasi:</strong> Sesi tanya jawab materi sekolah. <strong>Khusus dialokasikan di Ruang 1 atau Ruang 2</strong>.';
                 quotaInput.disabled = false;
                 if (!quotaInput.value) quotaInput.value = 4;
             } else if (code === 'private_bimbel') {
@@ -1478,7 +1478,7 @@
                 noteBox.style.background = 'var(--primary-soft)';
                 noteBox.style.color = 'var(--primary)';
                 noteBox.style.border = '1px solid color-mix(in srgb, var(--primary) 25%, transparent)';
-                noteBox.innerHTML = '<strong>Privat di Bimbel:</strong> Menggunakan ruangan fisik bimbel. Kuota langsung dikunci 1 siswa. <em>(Maksimal 2x sesi privat per hari)</em>.';
+                noteBox.innerHTML = '<strong>Privat di Bimbel:</strong> Menggunakan ruangan fisik bimbel (<strong>Khusus Ruang 1 atau Ruang 2</strong>). Kuota langsung dikunci 1 siswa. <em>(Maksimal 2x sesi privat per hari)</em>.';
                 quotaInput.value = 1;
                 quotaInput.disabled = true;
             } else {

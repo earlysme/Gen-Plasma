@@ -209,7 +209,14 @@ class ScheduleController extends Controller
             return back()->withInput()->with('error', 'Bentrok! Anda sudah memiliki jadwal mengajar lain pada tanggal dan sesi waktu yang sama.');
         }
 
-        // 2. VALIDASI ANTI-BENTROK RUANGAN FISIK:
+        // 2. VALIDASI ALOKASI RUANGAN KHUSUS (Privat Bimbel & Konsultasi HANYA Ruang 1 & 2):
+        if (in_array($program->code, ['private_bimbel', 'consult']) && $room->is_physical) {
+            if (! in_array($room->code, ['R1', 'R2'])) {
+                return back()->withInput()->with('error', "Program {$program->name} hanya diperbolehkan menggunakan Ruang 1 atau Ruang 2.");
+            }
+        }
+
+        // VALIDASI ANTI-BENTROK RUANGAN FISIK:
         if ($room->is_physical) {
             $roomCollision = Schedule::where('room_id', $roomId)
                 ->where('date', $date)
