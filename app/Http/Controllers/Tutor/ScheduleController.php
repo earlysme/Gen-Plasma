@@ -44,8 +44,8 @@ class ScheduleController extends Controller
         // Tanggal yang diperiksa (default: hari ini)
         $checkDate = $request->get('check_date', Carbon::today()->toDateString());
 
-        // Semua sesi aktif
-        $allTimeSlots = TimeSlot::where('is_active', true)->orderBy('session_number')->get();
+        // Sesi aktif sesuai hari (Sesi 7-10 khusus Sabtu)
+        $allTimeSlots = TimeSlot::forDate($checkDate);
 
         // 1. GRID 1: RUANGAN FISIK BIMBEL (R1 - R8) KHUSUS KELAS REGULER / BIMBEL
         $physicalRooms = Room::where('is_active', true)
@@ -191,6 +191,12 @@ class ScheduleController extends Controller
         $roomId = $validated['room_id'];
         $program = Program::findOrFail($validated['program_id']);
         $room = Room::findOrFail($roomId);
+        $timeSlot = TimeSlot::findOrFail($timeSlotId);
+
+        // 0. VALIDASI SESI KHUSUS SABTU (Sesi 7 s/d 10 hanya hari Sabtu):
+        if ($timeSlot->is_saturday_only && ! Carbon::parse($date)->isSaturday()) {
+            return back()->withInput()->with('error', "Sesi {$timeSlot->name} hanya tersedia untuk kegiatan bimbingan di hari Sabtu.");
+        }
 
         // 1. VALIDASI ANTI-BENTROK TUTOR:
         $tutorCollision = Schedule::where('tutor_id', $tutorId)
@@ -216,7 +222,22 @@ class ScheduleController extends Controller
             }
         }
 
-        // 3. PENENTUAN KUOTA KURSI:
+        // 3. VALIDASI BATAS MAKSIMAL 2x SESI PRIVAT PER HARI:
+        if ($program->is_private) {
+            $existingPrivateCount = Schedule::where('tutor_id', $tutorId)
+                ->where('date', $date)
+                ->where('status', '!=', 'cancelled')
+                ->whereHas('program', function ($q) {
+                    $q->where('is_private', true);
+                })
+                ->count();
+
+            if ($existingPrivateCount >= 2) {
+                return back()->withInput()->with('error', 'Batas kuota harian tercapai! Anda sudah memiliki 2 sesi privat pada tanggal ini. Tutor hanya diperbolehkan mengajar maksimal 2 sesi privat per hari.');
+            }
+        }
+
+        // 4. PENENTUAN KUOTA KURSI:
         if ($program->is_private) {
             $quotaMax = 1; // Program privat otomatis mengunci kuota 1
         } else {

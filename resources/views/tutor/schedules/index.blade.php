@@ -1353,7 +1353,7 @@
                 noteBox.style.background = 'var(--peach)';
                 noteBox.style.color = 'var(--peach-text)';
                 noteBox.style.border = '1px solid color-mix(in srgb, var(--peach-text) 25%, transparent)';
-                noteBox.innerHTML = '<strong>Privat di Rumah:</strong> Sesi berlangsung di rumah murid. Ruangan otomatis dialihkan ke <em>Rumah Siswa</em> (tidak memotong kuota 8 ruangan fisik). Kuota dikunci 1 murid.';
+                noteBox.innerHTML = '<strong>Privat di Rumah:</strong> Sesi berlangsung di rumah murid. Ruangan otomatis dialihkan ke <em>Rumah Siswa</em> (tidak memotong kuota 8 ruangan fisik). Kuota dikunci 1 murid. <em>(Maksimal 2x sesi privat per hari)</em>.';
                 quotaInput.value = 1;
                 quotaInput.disabled = true;
             } else if (code === 'consult') {
@@ -1369,7 +1369,7 @@
                 noteBox.style.background = 'var(--primary-soft)';
                 noteBox.style.color = 'var(--primary)';
                 noteBox.style.border = '1px solid color-mix(in srgb, var(--primary) 25%, transparent)';
-                noteBox.innerHTML = '<strong>Privat di Bimbel:</strong> Menggunakan ruangan fisik bimbel. Kuota langsung dikunci 1 siswa.';
+                noteBox.innerHTML = '<strong>Privat di Bimbel:</strong> Menggunakan ruangan fisik bimbel. Kuota langsung dikunci 1 siswa. <em>(Maksimal 2x sesi privat per hari)</em>.';
                 quotaInput.value = 1;
                 quotaInput.disabled = true;
             } else {
