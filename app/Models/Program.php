@@ -26,6 +26,11 @@ class Program extends Model
         return $this->hasMany(User::class);
     }
 
+    public function enrolledStudents()
+    {
+        return $this->belongsToMany(User::class, 'program_user')->withTimestamps();
+    }
+
     public function schedules()
     {
         return $this->hasMany(Schedule::class);

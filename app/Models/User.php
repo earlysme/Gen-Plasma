@@ -84,6 +84,11 @@ class User extends Authenticatable
         return $this->belongsTo(Program::class);
     }
 
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'program_user')->withTimestamps();
+    }
+
     // Subjects taught by tutor
     public function taughtSubjects()
     {

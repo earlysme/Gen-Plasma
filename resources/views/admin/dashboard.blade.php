@@ -487,8 +487,8 @@
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
         <div>
-            <h3 style="font-size: 16px; color: var(--text); margin-bottom: 2px;">Matriks Okupansi 8 Ruangan Hari Ini</h3>
-            <small style="color: var(--muted);">Tanggal: {{ $today->isoFormat('dddd, D MMMM Y') }}</small>
+            <h3 style="font-size: 16px; color: var(--text); margin-bottom: 2px;">Matriks Okupansi 8 Ruangan</h3>
+            <small style="color: var(--muted);">Tanggal: {{ $selectedDate->isoFormat('dddd, D MMMM Y') }}</small>
         </div>
         <div style="display: flex; align-items: center; gap: 16px;">
             <span class="legend-item">

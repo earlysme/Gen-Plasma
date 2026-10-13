@@ -83,6 +83,13 @@ class DashboardController extends Controller
             ->orderBy('time_slot_id', 'asc')
             ->get();
 
+        // 8. Jadwal terbaru keseluruhan
+        $recentSchedules = Schedule::with(['tutor', 'subject', 'room', 'timeSlot', 'program'])
+            ->orderBy('date', 'desc')
+            ->orderBy('time_slot_id', 'desc')
+            ->limit(10)
+            ->get();
+
         return view('admin.dashboard', compact(
             'selectedDate',
             'startOfWeek',
@@ -100,7 +107,8 @@ class DashboardController extends Controller
             'rooms',
             'timeSlots',
             'occupancyMatrix',
-            'schedulesList'
+            'schedulesList',
+            'recentSchedules'
         ));
     }
 }

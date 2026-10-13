@@ -22,7 +22,7 @@ class UserController extends Controller
     {
         $roleFilter = $request->get('role', 'student');
 
-        $query = User::with(['educationLevel', 'program', 'taughtSubjects', 'enrolledSubjects']);
+        $query = User::with(['educationLevel', 'program', 'programs', 'taughtSubjects', 'enrolledSubjects']);
 
         if (in_array($roleFilter, ['admin', 'tutor', 'student'])) {
             $query->where('role', $roleFilter);
@@ -63,6 +63,8 @@ class UserController extends Controller
             'grade_class' => ['nullable', 'string', 'max:50'],
             'education_level_id' => ['nullable', 'exists:education_levels,id'],
             'program_id' => ['nullable', 'exists:programs,id'],
+            'program_ids' => ['nullable', 'array'],
+            'program_ids.*' => ['exists:programs,id'],
             'weekly_frequency' => ['nullable', 'integer', 'min:1', 'max:7'],
             'preferred_days' => ['nullable', 'array'],
             'subject_ids' => ['nullable', 'array'],
@@ -73,6 +75,13 @@ class UserController extends Controller
         if ($request->hasFile('profile_photo')) {
             $photoPath = $request->file('profile_photo')->store('profile-photos', 'public');
         }
+
+        // Tentukan program_ids dan program_id utama
+        $programIds = $validated['program_ids'] ?? [];
+        if (empty($programIds) && !empty($validated['program_id'])) {
+            $programIds = [$validated['program_id']];
+        }
+        $primaryProgramId = $programIds[0] ?? ($validated['program_id'] ?? null);
 
         $user = User::create([
             'name' => $validated['name'],
@@ -85,7 +94,7 @@ class UserController extends Controller
             'school_origin' => $validated['school_origin'] ?? null,
             'grade_class' => $validated['grade_class'] ?? null,
             'education_level_id' => $validated['education_level_id'] ?? null,
-            'program_id' => $validated['program_id'] ?? null,
+            'program_id' => $primaryProgramId,
             'weekly_frequency' => $validated['weekly_frequency'] ?? 2,
             'preferred_days' => $validated['preferred_days'] ?? null,
         ]);
@@ -93,6 +102,11 @@ class UserController extends Controller
         // Tetapkan role Spatie
         $role = Role::firstOrCreate(['name' => $validated['role'], 'guard_name' => 'web']);
         $user->syncRoles([$role]);
+
+        // Simpan relasi program (murid bisa ambil lebih dari 1 program, misal Reguler + Konsultasi)
+        if ($validated['role'] === 'student') {
+            $user->programs()->sync($programIds);
+        }
 
         // Simpan relasi mapel
         if (!empty($validated['subject_ids'])) {
@@ -124,11 +138,19 @@ class UserController extends Controller
             'grade_class' => ['nullable', 'string', 'max:50'],
             'education_level_id' => ['nullable', 'exists:education_levels,id'],
             'program_id' => ['nullable', 'exists:programs,id'],
+            'program_ids' => ['nullable', 'array'],
+            'program_ids.*' => ['exists:programs,id'],
             'weekly_frequency' => ['nullable', 'integer', 'min:1', 'max:7'],
             'preferred_days' => ['nullable', 'array'],
             'subject_ids' => ['nullable', 'array'],
             'subject_ids.*' => ['exists:subjects,id'],
         ]);
+
+        $programIds = $validated['program_ids'] ?? [];
+        if (empty($programIds) && !empty($validated['program_id'])) {
+            $programIds = [$validated['program_id']];
+        }
+        $primaryProgramId = $programIds[0] ?? ($validated['program_id'] ?? null);
 
         $updateData = [
             'name' => $validated['name'],
@@ -139,7 +161,7 @@ class UserController extends Controller
             'school_origin' => $validated['school_origin'] ?? null,
             'grade_class' => $validated['grade_class'] ?? null,
             'education_level_id' => $validated['education_level_id'] ?? null,
-            'program_id' => $validated['program_id'] ?? null,
+            'program_id' => $primaryProgramId,
             'weekly_frequency' => $validated['weekly_frequency'] ?? 2,
             'preferred_days' => $validated['preferred_days'] ?? null,
         ];
@@ -160,6 +182,11 @@ class UserController extends Controller
         // Update role Spatie
         $role = Role::firstOrCreate(['name' => $validated['role'], 'guard_name' => 'web']);
         $user->syncRoles([$role]);
+
+        // Simpan relasi program untuk murid
+        if ($validated['role'] === 'student') {
+            $user->programs()->sync($programIds);
+        }
 
         // Simpan relasi mapel
         if ($validated['role'] === 'tutor') {
